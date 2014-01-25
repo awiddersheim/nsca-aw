@@ -34,7 +34,7 @@
 
 /* opens a connection to a remote host/tcp port */
 int my_tcp_connect(char *host_name, int port, int *sd) {
-        return(
+	return(
 		my_connect(
 			host_name,
 			port,
@@ -88,7 +88,7 @@ int my_connect(char *host_name, int port, int *sd, char *proto) {
 	/* open a connection */
 	result = connect(*sd, (struct sockaddr *)&servaddr, sizeof(servaddr));
 	if(result < 0) {
-		switch(errno) {  
+		switch(errno) {
 			case ECONNREFUSED:
 				printf("Connection refused by host\n");
 				break;
@@ -141,11 +141,11 @@ int my_inet_aton(register const char *cp, struct in_addr *addr) {
 			if(isascii((int)c) && isdigit((int)c)) {
 				val=(val*base) + (c -'0');
 				c = *++cp;
-		        } 
+			}
 			else if(base == 16 && isascii((int)c) && isxdigit((int)c)) {
 				val = (val << 4) | (c + 10 - (islower((int)c) ? 'a' : 'A'));
 				c = *++cp;
-			} 
+			}
 			else
 				break;
 		}
@@ -161,10 +161,10 @@ int my_inet_aton(register const char *cp, struct in_addr *addr) {
 				return(0);
 			*pp++ = val;
 			c = *++cp;
-		} 
+		}
 		else
 			break;
-	        }
+		}
 
 	/* Check for trailing characters */
 	if(c != '\0' && (!isascii((int)c) || !isspace((int)c)))
@@ -221,7 +221,6 @@ int sendall(int s, char *buf, int *len){
 	return n == -1 ? -1 : 0;
 }
 
-
 /* receives all data - modelled after sendall() */
 int recvall(int s, char *buf, int *len, int timeout){
 	int total = 0;
@@ -229,7 +228,7 @@ int recvall(int s, char *buf, int *len, int timeout){
 	int n = 0;
 	time_t start_time;
 	time_t current_time;
-	
+
 	/* clear the receive buffer */
 	bzero(buf, *len);
 

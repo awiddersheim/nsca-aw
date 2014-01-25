@@ -75,65 +75,65 @@ int deny_severity = LOG_WARNING;
 #endif
 
 int main(int argc, char **argv) {
-        char buffer[MAX_INPUT_BUFFER];
-        int result;
-        uid_t uid = -1;
-        gid_t gid = -1;
+	char buffer[MAX_INPUT_BUFFER];
+	int result;
+	uid_t uid = -1;
+	gid_t gid = -1;
 
 	/* process command-line arguments */
 	result = process_arguments(argc, argv);
 
-        if (result != OK || show_help == TRUE || show_license == TRUE || show_version == TRUE) {
+	if (result != OK || show_help == TRUE || show_license == TRUE || show_version == TRUE) {
 		if (result != OK)
 			printf("Incorrect command line arguments supplied\n");
-                printf("\n");
-                printf("NSCA - Nagios Service Check Acceptor\n");
+		printf("\n");
+		printf("NSCA - Nagios Service Check Acceptor\n");
 		printf("Copyright (c) 2009 Nagios Core Development Team and Community Contributors\n");
-                printf("Copyright (c) 2000-2009 Ethan Galstad\n");
-                printf("Version: %s\n", PROGRAM_VERSION);
-                printf("Last Modified: %s\n", MODIFICATION_DATE);
-                printf("License: GPL v2\n");
-                printf("Encryption Routines: ");
+		printf("Copyright (c) 2000-2009 Ethan Galstad\n");
+		printf("Version: %s\n", PROGRAM_VERSION);
+		printf("Last Modified: %s\n", MODIFICATION_DATE);
+		printf("License: GPL v2\n");
+		printf("Encryption Routines: ");
 #ifdef HAVE_LIBMCRYPT
-                printf("AVAILABLE");
+		printf("AVAILABLE");
 #else
-                printf("NOT AVAILABLE");
+		printf("NOT AVAILABLE");
 #endif
-                printf("\n");
+		printf("\n");
 #ifdef HAVE_LIBWRAP
 		printf("TCP Wrappers Available\n");
 #endif
-                printf("\n");
+		printf("\n");
 	}
 
 	if (result != OK || show_help == TRUE) {
-                printf("Usage: %s -c <config_file> [mode]\n", argv[0]);
-                printf("\n");
-                printf("Options:\n");
+		printf("Usage: %s -c <config_file> [mode]\n", argv[0]);
+		printf("\n");
+		printf("Options:\n");
 		printf(" <config_file> = Name of config file to use\n");
 		printf(" [mode]        = Determines how NSCA should run. Valid modes:\n");
-                printf("   --inetd     = Run as a service under inetd or xinetd\n");
-                printf("   --daemon    = Run as a standalone multi-process daemon\n");
-                printf("   --single    = Run as a standalone single-process daemon (default)\n");
-                printf("\n");
-                printf("Notes:\n");
-                printf("This program is designed to accept passive check results from\n");
-                printf("remote hosts that use the send_nsca utility. Can run as a service\n");
-                printf("under inetd or xinetd (read the docs for info on this), or as a\n");
-                printf("standalone daemon.\n");
-                printf("\n");
+		printf("   --inetd     = Run as a service under inetd or xinetd\n");
+		printf("   --daemon    = Run as a standalone multi-process daemon\n");
+		printf("   --single    = Run as a standalone single-process daemon (default)\n");
+		printf("\n");
+		printf("Notes:\n");
+		printf("This program is designed to accept passive check results from\n");
+		printf("remote hosts that use the send_nsca utility. Can run as a service\n");
+		printf("under inetd or xinetd (read the docs for info on this), or as a\n");
+		printf("standalone daemon.\n");
+		printf("\n");
 	}
 
 	if (show_license == TRUE)
 		display_license();
 
-        if (result != OK || show_help == TRUE || show_license == TRUE || show_version == TRUE)
+	if (result != OK || show_help == TRUE || show_license == TRUE || show_version == TRUE)
 		do_exit(STATE_UNKNOWN);
 
-        /* open a connection to the syslog facility */
+	/* open a connection to the syslog facility */
 	/* facility may be overridden later */
 	get_log_facility(NSCA_LOG_FACILITY);
-        openlog("nsca", LOG_PID|LOG_NDELAY, log_facility);
+	openlog("nsca", LOG_PID|LOG_NDELAY, log_facility);
 
 	/* make sure the config file uses an absolute path */
 	if (config_file[0] != '/') {
@@ -155,43 +155,43 @@ int main(int argc, char **argv) {
 	}
 
 	/* read the config file */
-        result = read_config_file(config_file);
+	result = read_config_file(config_file);
 
-        /* exit if there are errors... */
-        if (result == ERROR)
-                do_exit(STATE_CRITICAL);
+	/* exit if there are errors... */
+	if (result == ERROR)
+		do_exit(STATE_CRITICAL);
 
-        /* generate the CRC 32 table */
-        generate_crc32_table();
+	/* generate the CRC 32 table */
+	generate_crc32_table();
 
 	/* how should we handle client connections? */
-        switch(mode){
-        case INETD:
+	switch(mode){
+	case INETD:
 		/* chroot if configured */
 		do_chroot();
 
-                /* if we're running under inetd, handle one connection and get out */
-                handle_connection(0, NULL);
-                break;
+		/* if we're running under inetd, handle one connection and get out */
+		handle_connection(0, NULL);
+		break;
 
-        case MULTI_PROCESS_DAEMON:
+	case MULTI_PROCESS_DAEMON:
 
 		/* older style, mult-process daemon */
 		/* execution cascades below... */
-                install_child_handler();
+		install_child_handler();
 
 		/*     |
 		       |
 		       |     */
-        case SINGLE_PROCESS_DAEMON:
+	case SINGLE_PROCESS_DAEMON:
 		/*     |
 		       |
 		       V     */
 
-                /* daemonize and start listening for requests... */
-                if (fork() == 0) {
-                        /* we're a daemon - set up a new process group */
-                        setsid();
+		/* daemonize and start listening for requests... */
+		if (fork() == 0) {
+			/* we're a daemon - set up a new process group */
+			setsid();
 
 			/* handle signals */
 			signal(SIGQUIT, sighandler);
@@ -199,9 +199,9 @@ int main(int argc, char **argv) {
 			signal(SIGHUP, sighandler);
 
 			/* close standard file descriptors */
-                        close(0);
-                        close(1);
-                        close(2);
+			close(0);
+			close(1);
+			close(2);
 
 			/* redirect standard descriptors to /dev/null */
 			open("/dev/null", O_RDONLY);
@@ -255,12 +255,12 @@ int main(int argc, char **argv) {
 
 			syslog(LOG_NOTICE, "Daemon shutdown\n");
 		}
-                break;
-        default:
-                break;
+		break;
+	default:
+		break;
 	}
 	/* we are now running in daemon mode, or the connection handed over by inetd has been completed, so the parent process exits */
-        do_exit(STATE_OK);
+	do_exit(STATE_OK);
 
 	/* keep the compilers happy... */
 	return(STATE_OK);
@@ -271,14 +271,14 @@ static void do_cleanup(void){
 	/* free memory */
 	free_memory();
 
-        /* close the command file if its still open */
-        if (command_file_fp != NULL)
-                close_command_file();
+	/* close the command file if its still open */
+	if (command_file_fp != NULL)
+		close_command_file();
 
- 	/*** CLEAR SENSITIVE INFO FROM MEMORY ***/
+	/*** CLEAR SENSITIVE INFO FROM MEMORY ***/
 
-        /* overwrite password */
-        clear_buffer(password, sizeof(password));
+	/* overwrite password */
+	clear_buffer(password, sizeof(password));
 
 	/* disguise decryption method */
 	decryption_method = -1;
@@ -320,153 +320,153 @@ static void do_exit(int return_code) {
 
 /* read in the configuration file */
 static int read_config_file(char *filename){
-        FILE *fp;
-        char input_buffer[MAX_INPUT_BUFFER];
-        char *varname;
-        char *varvalue;
-        int line;
+	FILE *fp;
+	char input_buffer[MAX_INPUT_BUFFER];
+	char *varname;
+	char *varvalue;
+	int line;
 
-        /* open the config file for reading */
-        fp = fopen(filename, "r");
+	/* open the config file for reading */
+	fp = fopen(filename, "r");
 
-        /* exit if we couldn't open the config file */
-        if (fp == NULL){
+	/* exit if we couldn't open the config file */
+	if (fp == NULL){
 		syslog(LOG_ERR, "Could not open config file '%s' for reading\n", filename);
-                return(ERROR);
+		return(ERROR);
 	}
 
-        line=0;
-        while(fgets(input_buffer, MAX_INPUT_BUFFER-1, fp)) {
-                line++;
+	line=0;
+	while(fgets(input_buffer, MAX_INPUT_BUFFER-1, fp)) {
+		line++;
 
-                /* skip comments and blank lines */
-                if (input_buffer[0] == '#')
-                        continue;
-                if (input_buffer[0] == '\0')
-                        continue;
-                if (input_buffer[0] == '\n')
-                        continue;
+		/* skip comments and blank lines */
+		if (input_buffer[0] == '#')
+			continue;
+		if (input_buffer[0] == '\0')
+			continue;
+		if (input_buffer[0] == '\n')
+			continue;
 
-                /* get the variable name */
-                varname = strtok(input_buffer, "=");
-                if (varname == NULL) {
-                        syslog(
+		/* get the variable name */
+		varname = strtok(input_buffer, "=");
+		if (varname == NULL) {
+			syslog(
 				LOG_ERR,
 				"No variable name specified in config file '%s' - Line %d\n",
 				filename,
 				line
 			);
-                        return(ERROR);
+			return(ERROR);
 		}
 
-                /* get the variable value */
-                varvalue = strtok(NULL, "\n");
-                if (varvalue == NULL) {
-                        syslog(
+		/* get the variable value */
+		varvalue = strtok(NULL, "\n");
+		if (varvalue == NULL) {
+			syslog(
 				LOG_ERR,
 				"No variable value specified in config file '%s' - Line %d\n",
 				filename,
 				line
 			);
-                        return(ERROR);
+			return(ERROR);
 		}
 
-                if (!strcmp(varname, "server_port")) {
-                        server_port = atoi(varvalue);
-                        if ((server_port < 1024 && (geteuid() != 0)) || server_port < 0) {
-                                syslog(
+		if (!strcmp(varname, "server_port")) {
+			server_port = atoi(varvalue);
+			if ((server_port < 1024 && (geteuid() != 0)) || server_port < 0) {
+				syslog(
 					LOG_ERR,
 					"Invalid port number specified in config file '%s' - Line %d\n",
 					filename,
 					line
 				);
-                                return(ERROR);
-                        }
-                }
+				return(ERROR);
+			}
+		}
 
 		else if (!strcmp(varname, "server_address")) {
-                        strncpy(server_address, varvalue, sizeof(server_address) - 1);
-                        server_address[sizeof(server_address)-1] = '\0';
-                }
+			strncpy(server_address, varvalue, sizeof(server_address) - 1);
+			server_address[sizeof(server_address)-1] = '\0';
+		}
 
 		else if (strstr(input_buffer, "command_file")) {
-                        if (strlen(varvalue) > sizeof(command_file)-1) {
-                                syslog(
+			if (strlen(varvalue) > sizeof(command_file)-1) {
+				syslog(
 					LOG_ERR,
 					"Command file name is too long in config file '%s' - Line %d\n",
 					filename,
 					line
 				);
-                                return(ERROR);
+				return(ERROR);
 			}
 
-                        strncpy(command_file, varvalue, sizeof(command_file)-1);
-                        command_file[sizeof(command_file)-1] = '\0';
+			strncpy(command_file, varvalue, sizeof(command_file)-1);
+			command_file[sizeof(command_file)-1] = '\0';
 		}
 
 		else if (strstr(input_buffer, "alternate_dump_file")){
-                        if (strlen(varvalue) > sizeof(alternate_dump_file)-1) {
-                                syslog(
+			if (strlen(varvalue) > sizeof(alternate_dump_file)-1) {
+				syslog(
 					LOG_ERR,
 					"Alternate dump file name is too long in config file '%s' - Line %d\n",
 					filename,
 					line
 				);
-                                return(ERROR);
+				return(ERROR);
 			}
 
-                        strncpy(alternate_dump_file, varvalue, sizeof(alternate_dump_file)-1);
-                        alternate_dump_file[sizeof(alternate_dump_file)-1] = '\0';
+			strncpy(alternate_dump_file, varvalue, sizeof(alternate_dump_file)-1);
+			alternate_dump_file[sizeof(alternate_dump_file)-1] = '\0';
 		}
 
 		else if (strstr(input_buffer, "password")) {
-                        if (strlen(varvalue) > sizeof(password)-1) {
-                                syslog(
+			if (strlen(varvalue) > sizeof(password)-1) {
+				syslog(
 					LOG_ERR,
 					"Password is too long in config file '%s' - Line %d\n",
 					filename,
 					line
 				);
-                                return(ERROR);
+				return(ERROR);
 			}
 
-                        strncpy(password, varvalue, sizeof(password)-1);
-                        password[sizeof(password)-1] = '\0';
+			strncpy(password, varvalue, sizeof(password)-1);
+			password[sizeof(password)-1] = '\0';
 		}
 
 		else if (strstr(input_buffer, "decryption_method")) {
-                        decryption_method = atoi(varvalue);
+			decryption_method = atoi(varvalue);
 
-                        switch(decryption_method) {
-                        case ENCRYPT_NONE:
-                        case ENCRYPT_XOR:
-                                break;
+			switch(decryption_method) {
+			case ENCRYPT_NONE:
+			case ENCRYPT_XOR:
+				break;
 #ifdef HAVE_LIBMCRYPT
-                        case ENCRYPT_DES:
-                        case ENCRYPT_3DES:
-                        case ENCRYPT_CAST128:
-                        case ENCRYPT_CAST256:
-                        case ENCRYPT_XTEA:
-                        case ENCRYPT_3WAY:
-                        case ENCRYPT_BLOWFISH:
-                        case ENCRYPT_TWOFISH:
-                        case ENCRYPT_LOKI97:
-                        case ENCRYPT_RC2:
-                        case ENCRYPT_ARCFOUR:
-                        case ENCRYPT_RIJNDAEL128:
-                        case ENCRYPT_RIJNDAEL192:
-                        case ENCRYPT_RIJNDAEL256:
-                        case ENCRYPT_WAKE:
-                        case ENCRYPT_SERPENT:
-                        case ENCRYPT_ENIGMA:
-                        case ENCRYPT_GOST:
-                        case ENCRYPT_SAFER64:
-                        case ENCRYPT_SAFER128:
-                        case ENCRYPT_SAFERPLUS:
-                                break;
+			case ENCRYPT_DES:
+			case ENCRYPT_3DES:
+			case ENCRYPT_CAST128:
+			case ENCRYPT_CAST256:
+			case ENCRYPT_XTEA:
+			case ENCRYPT_3WAY:
+			case ENCRYPT_BLOWFISH:
+			case ENCRYPT_TWOFISH:
+			case ENCRYPT_LOKI97:
+			case ENCRYPT_RC2:
+			case ENCRYPT_ARCFOUR:
+			case ENCRYPT_RIJNDAEL128:
+			case ENCRYPT_RIJNDAEL192:
+			case ENCRYPT_RIJNDAEL256:
+			case ENCRYPT_WAKE:
+			case ENCRYPT_SERPENT:
+			case ENCRYPT_ENIGMA:
+			case ENCRYPT_GOST:
+			case ENCRYPT_SAFER64:
+			case ENCRYPT_SAFER128:
+			case ENCRYPT_SAFERPLUS:
+				break;
 #endif
-                        default:
-                                syslog(
+			default:
+				syslog(
 					LOG_ERR,
 					"Invalid decryption method (%d) in config file '%s' - Line %d\n",
 					decryption_method,
@@ -474,31 +474,31 @@ static int read_config_file(char *filename){
 					line
 				);
 #ifndef HAVE_LIBMCRYPT
-                                if (decryption_method >= 2)
-                                        syslog(
+				if (decryption_method >= 2)
+					syslog(
 						LOG_ERR,
 						"Daemon was not compiled with mcrypt library, so decryption is unavailable.\n"
 					);
 #endif
-                                return(ERROR);
-                        }
+				return(ERROR);
+			}
 		}
 
 		else if (strstr(input_buffer, "debug")) {
-                        if (atoi(varvalue) > 0)
-                                debug = TRUE;
-                        else
-                                debug = FALSE;
+			if (atoi(varvalue) > 0)
+				debug = TRUE;
+			else
+				debug = FALSE;
 		}
 
 		else if (strstr(input_buffer, "aggregate_writes")) {
-                        if (atoi(varvalue) > 0)
-                                aggregate_writes = TRUE;
-                        else
-                                aggregate_writes = FALSE;
+			if (atoi(varvalue) > 0)
+				aggregate_writes = TRUE;
+			else
+				aggregate_writes = FALSE;
 		}
 
-                else if (strstr(input_buffer, "check_result_path")) {
+		else if (strstr(input_buffer, "check_result_path")) {
 			if (strlen(varvalue) > MAX_INPUT_BUFFER-1) {
 				syslog(
 					LOG_ERR,
@@ -506,7 +506,7 @@ static int read_config_file(char *filename){
 					filename,
 					line
 				);
-                        	return(ERROR);
+				return(ERROR);
 			}
 
 			check_result_path = strdup(varvalue);
@@ -527,30 +527,30 @@ static int read_config_file(char *filename){
 		}
 
 		else if (strstr(input_buffer, "append_to_file")) {
-                        if (atoi(varvalue) > 0)
-                                append_to_file = TRUE;
-                        else
-                                append_to_file = FALSE;
+			if (atoi(varvalue) > 0)
+				append_to_file = TRUE;
+			else
+				append_to_file = FALSE;
 		}
 
 		else if (!strcmp(varname, "max_packet_age")) {
-                        max_packet_age = strtoul(varvalue, NULL, 10);
-                        if (max_packet_age > 900){
-                                syslog(
+			max_packet_age = strtoul(varvalue, NULL, 10);
+			if (max_packet_age > 900){
+				syslog(
 					LOG_ERR,
 					"Max packet age cannot be greater than 15 minutes (900 seconds)\n"
 				);
-                                return(ERROR);
+				return(ERROR);
 			}
 		}
 
-                else if (!strcmp(varname, "nsca_user"))
+		else if (!strcmp(varname, "nsca_user"))
 			nsca_user = strdup(varvalue);
 
-                else if (!strcmp(varname, "nsca_group"))
+		else if (!strcmp(varname, "nsca_group"))
 			nsca_group = strdup(varvalue);
 
-                else if (!strcmp(varname, "nsca_chroot"))
+		else if (!strcmp(varname, "nsca_chroot"))
 			nsca_chroot = strdup(varvalue);
 
 		else if (!strcmp(varname, "pid_file"))
@@ -572,20 +572,20 @@ static int read_config_file(char *filename){
 		}
 
 		else {
-                        syslog(
+			syslog(
 				LOG_ERR,
 				"Unknown option specified in config file '%s' - Line %d\n",
 				filename,
 				line
 			);
-                        return(ERROR);
+			return(ERROR);
 		}
 	}
 
-        /* close the config file */
-        fclose(fp);
+	/* close the config file */
+	fclose(fp);
 
-        return(OK);
+	return(OK);
 }
 
 /* determines facility to use with syslog */
@@ -640,179 +640,179 @@ int get_log_facility(char *varvalue) {
 
 /* get rid of all the children we can... */
 static void reap_children(int sig) {
-        while(waitpid(-1, NULL, WNOHANG) > 0);
+	while(waitpid(-1, NULL, WNOHANG) > 0);
 
 	return;
 }
 
 /* install reap_children() signal handler */
 static void install_child_handler(void) {
-        struct sigaction sa;
+	struct sigaction sa;
 
-        sa.sa_handler = reap_children;
-        sa.sa_flags = SA_NOCLDSTOP;
-        sigaction(SIGCHLD, &sa, NULL);
+	sa.sa_handler = reap_children;
+	sa.sa_flags = SA_NOCLDSTOP;
+	sigaction(SIGCHLD, &sa, NULL);
 
 	return;
 }
 
 /* register a file descriptor to be polled for an event set */
 static void register_poll(short events, int fd){
-        int i;
+	int i;
 
-        /* if it's already in the list, just flag the events */
-        for (i = 0; i < npfds; i++) {
-                if (pfds[i].fd == fd) {
-                        pfds[i].events|=events;
-                        return;
+	/* if it's already in the list, just flag the events */
+	for (i = 0; i < npfds; i++) {
+		if (pfds[i].fd == fd) {
+			pfds[i].events|=events;
+			return;
 		}
 	}
 
-        /* else add it to the list */
-        if (maxpfds == 0) {
-                maxpfds++;
-                pfds=malloc(sizeof(struct pollfd));
+	/* else add it to the list */
+	if (maxpfds == 0) {
+		maxpfds++;
+		pfds=malloc(sizeof(struct pollfd));
 	}
 	else if (npfds + 1 > maxpfds) {
-                maxpfds++;
-                pfds=realloc(pfds, sizeof(struct pollfd) * maxpfds);
+		maxpfds++;
+		pfds=realloc(pfds, sizeof(struct pollfd) * maxpfds);
 	}
 
-        pfds[npfds].fd = fd;
-        pfds[npfds].events = events;
-        npfds++;
+	pfds[npfds].fd = fd;
+	pfds[npfds].events = events;
+	npfds++;
 }
 
 /* register a read handler */
 static void register_read_handler(int fd, void (*fp)(int, void *), void *data) {
-        int i;
+	int i;
 
-        /* register our interest in this descriptor */
-        register_poll(POLLIN, fd);
+	/* register our interest in this descriptor */
+	register_poll(POLLIN, fd);
 
-        /* if it's already in the list, just update the handler */
-        for (i = 0; i < nrhand; i++) {
-                if (rhand[i].fd == fd) {
-                        rhand[i].handler = fp;
-                        rhand[i].data = data;
-                        return;
+	/* if it's already in the list, just update the handler */
+	for (i = 0; i < nrhand; i++) {
+		if (rhand[i].fd == fd) {
+			rhand[i].handler = fp;
+			rhand[i].data = data;
+			return;
 		}
 	}
 
-        /* else add it to the list */
-        if (maxrhand==0) {
-                maxrhand++;
-                rhand = malloc(sizeof(struct handler_entry));
+	/* else add it to the list */
+	if (maxrhand==0) {
+		maxrhand++;
+		rhand = malloc(sizeof(struct handler_entry));
 	}
 	else if (nrhand + 1 > maxrhand){
-                maxrhand++;
-                rhand = realloc(rhand, sizeof(struct handler_entry) * maxrhand);
+		maxrhand++;
+		rhand = realloc(rhand, sizeof(struct handler_entry) * maxrhand);
 	}
 
-        rhand[nrhand].fd = fd;
-        rhand[nrhand].handler = fp;
-        rhand[nrhand].data = data;
-        nrhand++;
+	rhand[nrhand].fd = fd;
+	rhand[nrhand].handler = fp;
+	rhand[nrhand].data = data;
+	nrhand++;
 }
 
 /* register a write handler */
 static void register_write_handler(int fd, void (*fp)(int, void *), void *data) {
-        int i;
+	int i;
 
-        /* register our interest in this descriptor */
-        register_poll(POLLOUT, fd);
+	/* register our interest in this descriptor */
+	register_poll(POLLOUT, fd);
 
-        /* if it's already in the list, just update the handler */
-        for (i = 0; i < nwhand; i++) {
-                if (whand[i].fd == fd) {
-                        whand[i].handler = fp;
-                        whand[i].data = data;
-                        return;
+	/* if it's already in the list, just update the handler */
+	for (i = 0; i < nwhand; i++) {
+		if (whand[i].fd == fd) {
+			whand[i].handler = fp;
+			whand[i].data = data;
+			return;
 		}
 	}
 
-        /* else add it to the list */
-        if (maxwhand == 0) {
-                maxwhand++;
-                whand = malloc(sizeof(struct handler_entry));
+	/* else add it to the list */
+	if (maxwhand == 0) {
+		maxwhand++;
+		whand = malloc(sizeof(struct handler_entry));
 	}
 	else if (nwhand + 1 > maxwhand) {
-                maxwhand++;
-                whand = realloc(whand, sizeof(struct handler_entry) * maxwhand);
+		maxwhand++;
+		whand = realloc(whand, sizeof(struct handler_entry) * maxwhand);
 	}
 
-        whand[nwhand].fd = fd;
-        whand[nwhand].handler = fp;
-        whand[nwhand].data = data;
-        nwhand++;
+	whand[nwhand].fd = fd;
+	whand[nwhand].handler = fp;
+	whand[nwhand].data = data;
+	nwhand++;
 }
 
 /* find read handler */
 static int find_rhand(int fd) {
-        int i;
+	int i;
 
-        for (i = 0; i < nrhand; i++) {
-                if (rhand[i].fd == fd)
-                        return(i);
+	for (i = 0; i < nrhand; i++) {
+		if (rhand[i].fd == fd)
+			return(i);
 	}
 
 	/* we couldn't find the read handler */
-        syslog(LOG_ERR, "Handler stack corrupt - aborting");
-        do_exit(STATE_CRITICAL);
+	syslog(LOG_ERR, "Handler stack corrupt - aborting");
+	do_exit(STATE_CRITICAL);
 }
 
 /* find write handler */
 static int find_whand(int fd) {
-        int i;
+	int i;
 
-        for (i = 0; i < nwhand; i++) {
-                if (whand[i].fd == fd)
-                        return(i);
+	for (i = 0; i < nwhand; i++) {
+		if (whand[i].fd == fd)
+			return(i);
 	}
 
 	/* we couldn't find the write handler */
-        syslog(LOG_ERR, "Handler stack corrupt - aborting");
-        do_exit(STATE_CRITICAL);
+	syslog(LOG_ERR, "Handler stack corrupt - aborting");
+	do_exit(STATE_CRITICAL);
 }
 
 /* handle pending events */
 static void handle_events(void){
-        void (*handler)(int, void *);
-        void *data;
-        int i, hand;
+	void (*handler)(int, void *);
+	void *data;
+	int i, hand;
 
 	/* bail out if necessary */
 	if (sigrestart == TRUE || sigshutdown == TRUE)
 		return;
 
-        poll(pfds, npfds, -1);
-        for (i = 0; i < npfds; i++) {
-                if ((pfds[i].events&POLLIN) && (pfds[i].revents&(POLLIN|POLLERR|POLLHUP|POLLNVAL))) {
-                        pfds[i].events&=~POLLIN;
-                        hand = find_rhand(pfds[i].fd);
-                        handler = rhand[hand].handler;
-                        data = rhand[hand].data;
-                        rhand[hand].handler = NULL;
-                        rhand[hand].data = NULL;
-                        handler(pfds[i].fd, data);
+	poll(pfds, npfds, -1);
+	for (i = 0; i < npfds; i++) {
+		if ((pfds[i].events&POLLIN) && (pfds[i].revents&(POLLIN|POLLERR|POLLHUP|POLLNVAL))) {
+			pfds[i].events&=~POLLIN;
+			hand = find_rhand(pfds[i].fd);
+			handler = rhand[hand].handler;
+			data = rhand[hand].data;
+			rhand[hand].handler = NULL;
+			rhand[hand].data = NULL;
+			handler(pfds[i].fd, data);
 		}
 
-                if ((pfds[i].events&POLLOUT) && (pfds[i].revents&(POLLOUT|POLLERR|POLLHUP|POLLNVAL))) {
-                        pfds[i].events&=~POLLOUT;
-                        hand = find_whand(pfds[i].fd);
-                        handler = whand[hand].handler;
-                        data = whand[hand].data;
-                        whand[hand].handler = NULL;
-                        whand[hand].data = NULL;
-                        handler(pfds[i].fd, data);
+		if ((pfds[i].events&POLLOUT) && (pfds[i].revents&(POLLOUT|POLLERR|POLLHUP|POLLNVAL))) {
+			pfds[i].events&=~POLLOUT;
+			hand = find_whand(pfds[i].fd);
+			handler = whand[hand].handler;
+			data = whand[hand].data;
+			whand[hand].handler = NULL;
+			whand[hand].data = NULL;
+			handler(pfds[i].fd, data);
 		}
 	}
 
-        for (i = 0; i < npfds; i++) {
-                if (pfds[i].events == 0) {
-                        npfds--;
-                        pfds[i].fd = pfds[npfds].fd;
-                        pfds[i].events = pfds[npfds].events;
+	for (i = 0; i < npfds; i++) {
+		if (pfds[i].events == 0) {
+			npfds--;
+			pfds[i].fd = pfds[npfds].fd;
+			pfds[i].events = pfds[npfds].events;
 		}
 	}
 
@@ -821,77 +821,77 @@ static void handle_events(void){
 
 /* wait for incoming connection requests */
 static void wait_for_connections(void) {
-        struct sockaddr_in myname;
-        int sock = 0;
-        int flag = 1;
+	struct sockaddr_in myname;
+	int sock = 0;
+	int flag = 1;
 
-        /* create a socket for listening */
-        sock = socket(AF_INET, SOCK_STREAM, 0);
+	/* create a socket for listening */
+	sock = socket(AF_INET, SOCK_STREAM, 0);
 
-        /* exit if we couldn't create the socket */
-        if (sock < 0) {
-                syslog(
+	/* exit if we couldn't create the socket */
+	if (sock < 0) {
+		syslog(
 			LOG_ERR,
 			"Network server socket failure (%d: %s)",
 			errno,
 			strerror(errno)
 		);
-                do_exit(STATE_CRITICAL);
+		do_exit(STATE_CRITICAL);
 	}
 
-        /* set the reuse address flag so we don't get errors when restarting */
-        flag = 1;
-        if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&flag, sizeof(flag)) < 0) {
-                syslog(
+	/* set the reuse address flag so we don't get errors when restarting */
+	flag = 1;
+	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&flag, sizeof(flag)) < 0) {
+		syslog(
 			LOG_ERR,
 			"Could not set reuse address option on socket!\n"
 		);
-                do_exit(STATE_CRITICAL);
+		do_exit(STATE_CRITICAL);
 	}
 
-        myname.sin_family = AF_INET;
-        myname.sin_port = htons(server_port);
-        bzero(&myname.sin_zero, 8);
+	myname.sin_family = AF_INET;
+	myname.sin_port = htons(server_port);
+	bzero(&myname.sin_zero, 8);
 
-        /* what address should we bind to? */
-        if (!strlen(server_address))
-                myname.sin_addr.s_addr = INADDR_ANY;
-        else if (!my_inet_aton(server_address, &myname.sin_addr)) {
-                syslog(
+	/* what address should we bind to? */
+	if (!strlen(server_address))
+		myname.sin_addr.s_addr = INADDR_ANY;
+	else if (!my_inet_aton(server_address, &myname.sin_addr)) {
+		syslog(
 			LOG_ERR,
 			"Server address is not a valid IP address\n"
 		);
-                do_exit(STATE_CRITICAL);
+		do_exit(STATE_CRITICAL);
 	}
 
 
-        /* bind the address to the Internet socket */
-        if (bind(sock, (struct sockaddr *)&myname, sizeof(myname)) < 0) {
-                syslog(
+	/* bind the address to the Internet socket */
+	if (bind(sock, (struct sockaddr *)&myname, sizeof(myname)) < 0) {
+		syslog(
 			LOG_ERR,
 			"Network server bind failure (%d: %s)\n",
 			errno,
 			strerror(errno)
 		);
-                do_exit(STATE_CRITICAL);
+		do_exit(STATE_CRITICAL);
 	}
 
-        /* open the socket for listening */
-        if (listen(sock, SOMAXCONN) < 0) {
-                syslog(
+	/* open the socket for listening */
+	if (listen(sock, SOMAXCONN) < 0) {
+		syslog(
 			LOG_ERR,
 			"Network server listen failure (%d: %s)\n",
 			errno,
 			strerror(errno)
 		);
-                do_exit(STATE_CRITICAL);
+		do_exit(STATE_CRITICAL);
 	}
 
-        /* log info to syslog facility */
-        syslog(LOG_NOTICE, "Starting up daemon");
+	/* log info to syslog facility */
+	syslog(LOG_NOTICE, "Starting up daemon");
 
-        if (debug == TRUE)
-                syslog(LOG_DEBUG,
+	if (debug == TRUE)
+		syslog(LOG_DEBUG,
 			"Listening for connections on port %d\n",
 			htons(myname.sin_port)
 		);
@@ -900,9 +900,9 @@ static void wait_for_connections(void) {
 	if (mode == MULTI_PROCESS_DAEMON)
 		fcntl(sock, F_SETFL, O_NONBLOCK);
 
-        /* listen for connection requests */
-        if (mode == SINGLE_PROCESS_DAEMON)
-                register_read_handler(sock, accept_connection, NULL);
+	/* listen for connection requests */
+	if (mode == SINGLE_PROCESS_DAEMON)
+		register_read_handler(sock, accept_connection, NULL);
 
 	while(1) {
 		/* bail out if necessary */
@@ -918,32 +918,32 @@ static void wait_for_connections(void) {
 
 		/* handle the new connection (if any) */
 		else
-                        handle_events();
+			handle_events();
 	}
 
 	return;
 }
 
 static void accept_connection(int sock, void *unused){
-        int new_sd;
-        pid_t pid;
-        struct sockaddr addr;
-        struct sockaddr_in *nptr;
-        socklen_t addrlen;
-        int rc;
+	int new_sd;
+	pid_t pid;
+	struct sockaddr addr;
+	struct sockaddr_in *nptr;
+	socklen_t addrlen;
+	int rc;
 #ifdef HAVE_LIBWRAP
 	struct request_info req;
 #endif
 
 	/* DO NOT REMOVE! 01/29/2007 single process daemon will fail if this is removed */
-        if (mode == SINGLE_PROCESS_DAEMON)
-                register_read_handler(sock, accept_connection, NULL);
+	if (mode == SINGLE_PROCESS_DAEMON)
+		register_read_handler(sock, accept_connection, NULL);
 
-        /* wait for a connection request */
-        while(1) {
+	/* wait for a connection request */
+	while(1) {
 		/* we got a live one... */
-                if ((new_sd=accept(sock,0,0)) >= 0)
-                        break;
+		if ((new_sd=accept(sock,0,0)) >= 0)
+			break;
 
 		/* handle the error */
 		else {
@@ -964,18 +964,18 @@ static void accept_connection(int sock, void *unused){
 		}
 	}
 
-        /* hey, there was an error... */
-        if (new_sd < 0) {
-                /* log error to syslog facility */
-                syslog(
+	/* hey, there was an error... */
+	if (new_sd < 0) {
+		/* log error to syslog facility */
+		syslog(
 			LOG_ERR,
 			"Network server accept failure (%d: %s)",
 			errno,
 			strerror(errno)
 		);
 
-                /* close socket prior to exiting */
-                close(sock);
+		/* close socket prior to exiting */
+		close(sock);
 		if (mode == MULTI_PROCESS_DAEMON)
 			do_exit(STATE_CRITICAL);
 		return;
@@ -995,45 +995,45 @@ static void accept_connection(int sock, void *unused){
 	}
 #endif
 
-        /* fork() if we have to... */
-        if (mode == MULTI_PROCESS_DAEMON) {
-                pid = fork();
+	/* fork() if we have to... */
+	if (mode == MULTI_PROCESS_DAEMON) {
+		pid = fork();
 
-                if (pid) {
-                        /* parent doesn't need the new connection */
-                        close(new_sd);
-                        return;
+		if (pid) {
+			/* parent doesn't need the new connection */
+			close(new_sd);
+			return;
 		}
 		else
-                        /* child does not need to listen for connections */
-                        close(sock);
+			/* child does not need to listen for connections */
+			close(sock);
 	}
 
-        /* find out who just connected... */
-        addrlen = sizeof(addr);
-        rc = getpeername(new_sd, &addr, &addrlen);
+	/* find out who just connected... */
+	addrlen = sizeof(addr);
+	rc = getpeername(new_sd, &addr, &addrlen);
 
-        if (rc < 0) {
-                /* log error to syslog facility */
-                syslog(
+	if (rc < 0) {
+		/* log error to syslog facility */
+		syslog(
 			LOG_ERR,
 			"Error: Network server getpeername() failure (%d: %s)",
 			errno,
 			strerror(errno)
 		);
 
-                /* close socket prior to exiting */
-                close(new_sd);
+		/* close socket prior to exiting */
+		close(new_sd);
 		if (mode==MULTI_PROCESS_DAEMON)
 			do_exit(STATE_CRITICAL);
 		return;
 	}
 
-        nptr = (struct sockaddr_in *)&addr;
+	nptr = (struct sockaddr_in *)&addr;
 
-        /* log info to syslog facility */
-        if (debug==TRUE)
-                syslog(
+	/* log info to syslog facility */
+	if (debug==TRUE)
+		syslog(
 			LOG_DEBUG,
 			"Connection from %s port %d",
 			inet_ntoa(nptr->sin_addr),
@@ -1053,78 +1053,78 @@ static void accept_connection(int sock, void *unused){
 
 /* handle a client connection */
 static void handle_connection(int sock, void *data) {
-        init_packet send_packet;
-        int bytes_to_send;
-        int rc;
-        int flags;
-        time_t packet_send_time;
-        struct crypt_instance *CI;
+	init_packet send_packet;
+	int bytes_to_send;
+	int rc;
+	int flags;
+	time_t packet_send_time;
+	struct crypt_instance *CI;
 
-        /* log info to syslog facility */
-        if (debug == TRUE)
-                syslog(LOG_INFO, "Handling the connection...");
+	/* log info to syslog facility */
+	if (debug == TRUE)
+		syslog(LOG_INFO, "Handling the connection...");
 
-        /* socket should be non-blocking */
-        fcntl(sock, F_GETFL, &flags);
-        fcntl(sock, F_SETFL, flags|O_NONBLOCK);
+	/* socket should be non-blocking */
+	fcntl(sock, F_GETFL, &flags);
+	fcntl(sock, F_SETFL, flags|O_NONBLOCK);
 
-        /* initialize encryption/decryption routines (server generates the IV to use and send to the client) */
-        if (encrypt_init(password, decryption_method, NULL, &CI) != OK) {
-                close(sock);
+	/* initialize encryption/decryption routines (server generates the IV to use and send to the client) */
+	if (encrypt_init(password, decryption_method, NULL, &CI) != OK) {
+		close(sock);
 		if (mode==MULTI_PROCESS_DAEMON)
 			do_exit(STATE_CRITICAL);
-                return;
+		return;
 	}
 
-        /* create initial packet to send to client (contains random IV and timestamp) */
-        memcpy(&send_packet.iv[0], CI->transmitted_iv, TRANSMITTED_IV_SIZE);
-        time(&packet_send_time);
-        send_packet.timestamp = (u_int32_t)htonl(packet_send_time);
+	/* create initial packet to send to client (contains random IV and timestamp) */
+	memcpy(&send_packet.iv[0], CI->transmitted_iv, TRANSMITTED_IV_SIZE);
+	time(&packet_send_time);
+	send_packet.timestamp = (u_int32_t)htonl(packet_send_time);
 
-        /* send client the initial packet */
-        bytes_to_send = sizeof(send_packet);
-        rc = sendall(sock, (char *)&send_packet, &bytes_to_send);
+	/* send client the initial packet */
+	bytes_to_send = sizeof(send_packet);
+	rc = sendall(sock, (char *)&send_packet, &bytes_to_send);
 
-        /* there was an error sending the packet */
-        if (rc ==- 1) {
-                syslog(LOG_ERR, "Could not send init packet to client\n");
-                encrypt_cleanup(decryption_method, CI);
-                close(sock);
+	/* there was an error sending the packet */
+	if (rc ==- 1) {
+		syslog(LOG_ERR, "Could not send init packet to client\n");
+		encrypt_cleanup(decryption_method, CI);
+		close(sock);
 		if (mode == MULTI_PROCESS_DAEMON)
 			do_exit(STATE_CRITICAL);
-                return;
+		return;
 	}
 
-        /* for some reason we didn't send all the bytes we were supposed to */
+	/* for some reason we didn't send all the bytes we were supposed to */
 	else if (bytes_to_send < sizeof(send_packet)) {
-                syslog(
+		syslog(
 			LOG_ERR,
 			"Only able to send %d of %d bytes of init packet to client\n",
 			rc,
 			sizeof(send_packet)
 		);
-                encrypt_cleanup(decryption_method,CI);
-                close(sock);
+		encrypt_cleanup(decryption_method,CI);
+		close(sock);
 		if (mode==MULTI_PROCESS_DAEMON)
 			do_exit(STATE_CRITICAL);
-                return;
+		return;
 	}
 
-        /* open the command file if we're aggregating writes */
-        if (aggregate_writes==TRUE) {
-                if (open_command_file() == ERROR) {
-                        close(sock);
+	/* open the command file if we're aggregating writes */
+	if (aggregate_writes==TRUE) {
+		if (open_command_file() == ERROR) {
+			close(sock);
 			if (mode==MULTI_PROCESS_DAEMON)
 				do_exit(STATE_CRITICAL);
-                        return;
+			return;
 		}
 	}
 
-        if (mode == SINGLE_PROCESS_DAEMON)
-                register_read_handler(sock, handle_connection_read, (void *)CI);
-        else {
-                while(1)
-                        handle_connection_read(sock, (void *)CI);
+	if (mode == SINGLE_PROCESS_DAEMON)
+		register_read_handler(sock, handle_connection_read, (void *)CI);
+	else {
+		while(1)
+			handle_connection_read(sock, (void *)CI);
 	}
 
 	return;
@@ -1132,73 +1132,73 @@ static void handle_connection(int sock, void *data) {
 
 /* handle reading from a client connection */
 static void handle_connection_read(int sock, void *data) {
-        data_packet receive_packet;
-        u_int32_t packet_crc32;
-        u_int32_t calculated_crc32;
-        struct crypt_instance *CI;
-        time_t packet_time;
-        time_t current_time;
-        int16_t return_code;
-        unsigned long packet_age = 0L;
-        int bytes_to_recv;
-        int rc;
-        char host_name[MAX_HOSTNAME_LENGTH];
-        char svc_description[MAX_DESCRIPTION_LENGTH];
-        char plugin_output[MAX_PLUGINOUTPUT_LENGTH];
-        int packet_length=sizeof(receive_packet);
-        int plugin_length=MAX_PLUGINOUTPUT_LENGTH;
-        CI = data;
+	data_packet receive_packet;
+	u_int32_t packet_crc32;
+	u_int32_t calculated_crc32;
+	struct crypt_instance *CI;
+	time_t packet_time;
+	time_t current_time;
+	int16_t return_code;
+	unsigned long packet_age = 0L;
+	int bytes_to_recv;
+	int rc;
+	char host_name[MAX_HOSTNAME_LENGTH];
+	char svc_description[MAX_DESCRIPTION_LENGTH];
+	char plugin_output[MAX_PLUGINOUTPUT_LENGTH];
+	int packet_length=sizeof(receive_packet);
+	int plugin_length=MAX_PLUGINOUTPUT_LENGTH;
+	CI = data;
 
-        /* process all data we get from the client... */
+	/* process all data we get from the client... */
 
-        /* read the packet from the client */
-        bytes_to_recv = sizeof(receive_packet);
-        rc = recvall(sock, (char *)&receive_packet, &bytes_to_recv, socket_timeout);
+	/* read the packet from the client */
+	bytes_to_recv = sizeof(receive_packet);
+	rc = recvall(sock, (char *)&receive_packet, &bytes_to_recv, socket_timeout);
 
-        /* recv() error or client disconnect */
-        if (rc <= 0) {
-                if (OLD_PACKET_LENGTH == bytes_to_recv) {
-                        packet_length = OLD_PACKET_LENGTH;
-                        plugin_length = OLD_PLUGINOUTPUT_LENGTH;
+	/* recv() error or client disconnect */
+	if (rc <= 0) {
+		if (OLD_PACKET_LENGTH == bytes_to_recv) {
+			packet_length = OLD_PACKET_LENGTH;
+			plugin_length = OLD_PLUGINOUTPUT_LENGTH;
 		} else {
-                        if (debug == TRUE)
-                                syslog(LOG_ERR, "End of connection...");
-                        encrypt_cleanup(decryption_method, CI);
-                        close(sock);
-                        if (mode == SINGLE_PROCESS_DAEMON)
-                                return;
-                        else
-                                do_exit(STATE_OK);
+			if (debug == TRUE)
+				syslog(LOG_ERR, "End of connection...");
+			encrypt_cleanup(decryption_method, CI);
+			close(sock);
+			if (mode == SINGLE_PROCESS_DAEMON)
+				return;
+			else
+				do_exit(STATE_OK);
 		}
 	}
 
-        /* we couldn't read the correct amount of data, so bail out */
-        if (bytes_to_recv != packet_length){
-                syslog(
+	/* we couldn't read the correct amount of data, so bail out */
+	if (bytes_to_recv != packet_length){
+		syslog(
 			LOG_ERR,
 			"Data sent from client was too short (%d < %d), aborting...",
 			bytes_to_recv,
 			packet_length
 		);
-                encrypt_cleanup(decryption_method, CI);
-                close(sock);
+		encrypt_cleanup(decryption_method, CI);
+		close(sock);
 		return;
-                if (mode == SINGLE_PROCESS_DAEMON)
-                        return;
-                else
-                        do_exit(STATE_CRITICAL);
+		if (mode == SINGLE_PROCESS_DAEMON)
+			return;
+		else
+			do_exit(STATE_CRITICAL);
 	}
 
-        /* if we're single-process, we need to set things up so we handle the next packet after this one... */
-        if (mode == SINGLE_PROCESS_DAEMON)
-                register_read_handler(sock, handle_connection_read, (void *)CI);
+	/* if we're single-process, we need to set things up so we handle the next packet after this one... */
+	if (mode == SINGLE_PROCESS_DAEMON)
+		register_read_handler(sock, handle_connection_read, (void *)CI);
 
-        /* decrypt the packet */
-        decrypt_buffer((char *)&receive_packet, packet_length, password, decryption_method, CI);
+	/* decrypt the packet */
+	decrypt_buffer((char *)&receive_packet, packet_length, password, decryption_method, CI);
 
-        /* make sure this is the right type of packet */
-        if (ntohs(receive_packet.packet_version) != NSCA_PACKET_VERSION_3) {
-                syslog(
+	/* make sure this is the right type of packet */
+	if (ntohs(receive_packet.packet_version) != NSCA_PACKET_VERSION_3) {
+		syslog(
 			LOG_ERR,
 			"Received invalid packet type/version from client - possibly due to client using wrong password or crypto algorithm?"
 		);
@@ -1206,36 +1206,36 @@ static void handle_connection_read(int sock, void *data) {
 		/*return;*/
 		close(sock);
 
-                if (mode == SINGLE_PROCESS_DAEMON)
-                        return;
-                else
-                        do_exit(STATE_OK);
+		if (mode == SINGLE_PROCESS_DAEMON)
+			return;
+		else
+			do_exit(STATE_OK);
 	}
 
-        /* check the crc 32 value */
-        packet_crc32 = ntohl(receive_packet.crc32_value);
-        receive_packet.crc32_value = 0L;
-        calculated_crc32 = calculate_crc32((char *)&receive_packet, packet_length);
-        if (packet_crc32 != calculated_crc32) {
-                syslog(
+	/* check the crc 32 value */
+	packet_crc32 = ntohl(receive_packet.crc32_value);
+	receive_packet.crc32_value = 0L;
+	calculated_crc32 = calculate_crc32((char *)&receive_packet, packet_length);
+	if (packet_crc32 != calculated_crc32) {
+		syslog(
 			LOG_ERR,
 			"Dropping packet with invalid CRC32 - possibly due to client using wrong password or crypto algorithm?"
 		);
 
-                /*return;*/
+		/*return;*/
 		close(sock);
-                if (mode == SINGLE_PROCESS_DAEMON)
-                        return;
-                else
-                        do_exit(STATE_OK);
+		if (mode == SINGLE_PROCESS_DAEMON)
+			return;
+		else
+			do_exit(STATE_OK);
 	}
 
-        /* host name */
-        strncpy(host_name, receive_packet.host_name, sizeof(host_name)-1);
-        host_name[sizeof(host_name)-1] = '\0';
+	/* host name */
+	strncpy(host_name, receive_packet.host_name, sizeof(host_name)-1);
+	host_name[sizeof(host_name)-1] = '\0';
 
-        packet_age = (unsigned long)(current_time-packet_time);
-        if (debug == TRUE)
+	packet_age = (unsigned long)(current_time-packet_time);
+	if (debug == TRUE)
 		syslog(
 			LOG_ERR,
 			"Time difference in packet: %lu seconds for host %s",
@@ -1243,37 +1243,37 @@ static void handle_connection_read(int sock, void *data) {
 			host_name
 		);
 
-        if ((max_packet_age > 0 && (packet_age > max_packet_age) && (packet_age >= 0)) ||
-                ((max_packet_age > 0) && (packet_age < (0-max_packet_age)) && (packet_age < 0))
-        ) {
-                syslog(
+	if ((max_packet_age > 0 && (packet_age > max_packet_age) && (packet_age >= 0)) ||
+		((max_packet_age > 0) && (packet_age < (0-max_packet_age)) && (packet_age < 0))
+	) {
+		syslog(
 			LOG_ERR,
 			"Dropping packet with stale timestamp for %s - packet was %lu seconds old.",
 			host_name,
 			packet_age
 		);
 		close(sock);
-                if (mode == SINGLE_PROCESS_DAEMON)
-                        return;
-                else
-                        do_exit(STATE_OK);
-        }
+		if (mode == SINGLE_PROCESS_DAEMON)
+			return;
+		else
+			do_exit(STATE_OK);
+	}
 
-        /**** GET THE SERVICE CHECK INFORMATION ****/
+	/**** GET THE SERVICE CHECK INFORMATION ****/
 
-        /* plugin return code */
-        return_code = ntohs(receive_packet.return_code);
+	/* plugin return code */
+	return_code = ntohs(receive_packet.return_code);
 
-        /* service description */
-        strncpy(svc_description, receive_packet.svc_description, sizeof(svc_description)-1);
-        svc_description[sizeof(svc_description)-1] = '\0';
+	/* service description */
+	strncpy(svc_description, receive_packet.svc_description, sizeof(svc_description)-1);
+	svc_description[sizeof(svc_description)-1] = '\0';
 
-        /* plugin output */
-        strncpy(plugin_output, receive_packet.plugin_output, plugin_length-1);
-        plugin_output[plugin_length-1] = '\0';
+	/* plugin output */
+	strncpy(plugin_output, receive_packet.plugin_output, plugin_length-1);
+	plugin_output[plugin_length-1] = '\0';
 
-        /* log info to syslog facility */
-        if (debug==TRUE) {
+	/* log info to syslog facility */
+	if (debug==TRUE) {
 		if (!strcmp(svc_description, ""))
 			syslog(
 				LOG_NOTICE,
@@ -1292,15 +1292,15 @@ static void handle_connection_read(int sock, void *data) {
 			);
 	}
 
-        /* write the check result to the external command file.
-         * Note: it's OK to hang at this point if the write doesn't succeed, as there's
-         * no way we could handle any other connection properly anyway.  so we don't
-         * use poll() - which fails on a pipe with any data, so it would cause us to
-         * only ever write one command at a time into the pipe.
-         */
-        //syslog(LOG_ERR,"'%s' (%s) []",check_result_path, strlen(check_result_path));
-        if (check_result_path == NULL)
-        	write_check_result(
+	/* write the check result to the external command file.
+	 * Note: it's OK to hang at this point if the write doesn't succeed, as there's
+	 * no way we could handle any other connection properly anyway.  so we don't
+	 * use poll() - which fails on a pipe with any data, so it would cause us to
+	 * only ever write one command at a time into the pipe.
+	 */
+	//syslog(LOG_ERR,"'%s' (%s) []",check_result_path, strlen(check_result_path));
+	if (check_result_path == NULL)
+		write_check_result(
 			host_name,
 			svc_description,
 			return_code,
@@ -1308,7 +1308,7 @@ static void handle_connection_read(int sock, void *data) {
 			time(NULL)
 		);
 	else
-                write_checkresult_file(
+		write_checkresult_file(
 			host_name,
 			svc_description,
 			return_code,
@@ -1330,26 +1330,26 @@ static int write_checkresult_file(
 	if (debug == TRUE)
 		syslog(LOG_ERR, "Attempting to write checkresult file");
 
-        mode_t new_umask = 077;
-        mode_t old_umask;
-        time_t current_time;
-        char *output_file = NULL;
-        int checkresult_file_fd = -1;
-        char *checkresult_file = NULL;
-        char *checkresult_ok_file = NULL;
-        FILE *checkresult_file_fp = NULL;
-        FILE *checkresult_ok_file_fp = NULL;
+	mode_t new_umask = 077;
+	mode_t old_umask;
+	time_t current_time;
+	char *output_file = NULL;
+	int checkresult_file_fd = -1;
+	char *checkresult_file = NULL;
+	char *checkresult_ok_file = NULL;
+	FILE *checkresult_file_fp = NULL;
+	FILE *checkresult_ok_file_fp = NULL;
 
-        /* change and store umask */
-        old_umask = umask(new_umask);
+	/* change and store umask */
+	old_umask = umask(new_umask);
 
-        /* create safe checkresult file */
-        asprintf(&checkresult_file, "%s/cXXXXXX", check_result_path);
-        checkresult_file_fd = mkstemp(checkresult_file);
-        if (checkresult_file_fd > 0)
-                checkresult_file_fp = fdopen(checkresult_file_fd, "w");
-        else {
-                syslog(
+	/* create safe checkresult file */
+	asprintf(&checkresult_file, "%s/cXXXXXX", check_result_path);
+	checkresult_file_fd = mkstemp(checkresult_file);
+	if (checkresult_file_fd > 0)
+		checkresult_file_fp = fdopen(checkresult_file_fd, "w");
+	else {
+		syslog(
 			LOG_ERR,
 			"Unable to open and write checkresult file '%s', failing back to PIPE",
 			checkresult_file
@@ -1373,50 +1373,50 @@ static int write_checkresult_file(
 			checkresult_file
 		);
 
-        time(&current_time);
-        fprintf(checkresult_file_fp, "### NSCA Passive Check Result ###\n");
-        fprintf(checkresult_file_fp, "# Time: %s", ctime(&current_time));
-        fprintf(checkresult_file_fp, "file_time=%d\n\n", current_time);
-        fprintf(
+	time(&current_time);
+	fprintf(checkresult_file_fp, "### NSCA Passive Check Result ###\n");
+	fprintf(checkresult_file_fp, "# Time: %s", ctime(&current_time));
+	fprintf(checkresult_file_fp, "file_time=%d\n\n", current_time);
+	fprintf(
 		checkresult_file_fp,
 		"### %s Check Result ###\n",
 		(svc_description == "") ? "Host" : "Service"
 	);
-        fprintf(checkresult_file_fp, "host_name=%s\n", host_name);
-        if (strcmp(svc_description, ""))
-                fprintf(checkresult_file_fp, "service_description=%s\n", svc_description);
-        fprintf(checkresult_file_fp, "check_type=1\n");
-        fprintf(checkresult_file_fp, "scheduled_check=0\n");
-        fprintf(checkresult_file_fp, "reschedule_check=0\n");
-        /* We have no latency data at this point. */
-        fprintf(checkresult_file_fp, "latency=0\n");
-        fprintf(checkresult_file_fp, "start_time=%lu.%lu\n", check_time,0L);
-        fprintf(checkresult_file_fp, "finish_time=%lu.%lu\n", check_time,0L);
-        fprintf(checkresult_file_fp,"return_code=%d\n", return_code);
-        /* newlines in output are already escaped */
-        fprintf(
+	fprintf(checkresult_file_fp, "host_name=%s\n", host_name);
+	if (strcmp(svc_description, ""))
+		fprintf(checkresult_file_fp, "service_description=%s\n", svc_description);
+	fprintf(checkresult_file_fp, "check_type=1\n");
+	fprintf(checkresult_file_fp, "scheduled_check=0\n");
+	fprintf(checkresult_file_fp, "reschedule_check=0\n");
+	/* We have no latency data at this point. */
+	fprintf(checkresult_file_fp, "latency=0\n");
+	fprintf(checkresult_file_fp, "start_time=%lu.%lu\n", check_time,0L);
+	fprintf(checkresult_file_fp, "finish_time=%lu.%lu\n", check_time,0L);
+	fprintf(checkresult_file_fp,"return_code=%d\n", return_code);
+	/* newlines in output are already escaped */
+	fprintf(
 		checkresult_file_fp,
 		"output=%s\n",
 		(plugin_output == NULL) ? "" : plugin_output
 	);
-        fprintf(checkresult_file_fp, "\n");
+	fprintf(checkresult_file_fp, "\n");
 
-        fclose(checkresult_file_fp);
+	fclose(checkresult_file_fp);
 
-        /* create and close ok file */
-        asprintf(&checkresult_ok_file, "%s.ok", checkresult_file);
-        syslog(
+	/* create and close ok file */
+	asprintf(&checkresult_ok_file, "%s.ok", checkresult_file);
+	syslog(
 		LOG_DEBUG,
 		"checkresult completion file '%s' open",
 		checkresult_ok_file
 	);
-        checkresult_ok_file_fp = fopen(checkresult_ok_file, "w");
-        fclose(checkresult_ok_file_fp);
+	checkresult_ok_file_fp = fopen(checkresult_ok_file, "w");
+	fclose(checkresult_ok_file_fp);
 
-        /* reset umask */
-        umask(old_umask);
+	/* reset umask */
+	umask(old_umask);
 
-        return(OK);
+	return(OK);
 }
 
 /* writes service/host check results to the Nagios command file */
@@ -1430,9 +1430,9 @@ static int write_check_result(
 	if (debug == TRUE)
 		syslog(LOG_ERR, "Attempting to write to nagios command pipe");
 
-        if (aggregate_writes == FALSE){
-                if (open_command_file() == ERROR)
-                        return(ERROR);
+	if (aggregate_writes == FALSE){
+		if (open_command_file() == ERROR)
+			return(ERROR);
 	}
 
 	if (!strcmp(svc_description, ""))
@@ -1454,25 +1454,25 @@ static int write_check_result(
 			return_code,plugin_output
 		);
 
-        if (aggregate_writes == FALSE)
-                close_command_file();
-        else
-                /* if we don't fflush() then we're writing in 4k non-CR-terminated blocks, and
-                 * anything else (eg. pscwatch) which writes to the file will be writing into
-                 * the middle of our commands.
-                 */
-                fflush(command_file_fp);
+	if (aggregate_writes == FALSE)
+		close_command_file();
+	else
+		/* if we don't fflush() then we're writing in 4k non-CR-terminated blocks, and
+		 * anything else (eg. pscwatch) which writes to the file will be writing into
+		 * the middle of our commands.
+		 */
+		fflush(command_file_fp);
 
-        return(OK);
+	return(OK);
 }
 
 /* opens the command file for writing */
 static int open_command_file(void) {
 	struct stat statbuf;
 
-        /* file is already open */
-        if (command_file_fp != NULL && using_alternate_dump_file == FALSE)
-                return(OK);
+	/* file is already open */
+	if (command_file_fp != NULL && using_alternate_dump_file == FALSE)
+		return(OK);
 
 	/* command file doesn't exist - monitoring app probably isn't running... */
 	if (stat(command_file, &statbuf)) {
@@ -1501,30 +1501,30 @@ static int open_command_file(void) {
 		return(OK);
 	}
 
-        /* open the command file for writing or appending */
-        command_file_fp = fopen(command_file, (append_to_file==TRUE) ? "a" : "w");
-        if (command_file_fp == NULL) {
-                if (debug == TRUE)
-                        syslog(
+	/* open the command file for writing or appending */
+	command_file_fp = fopen(command_file, (append_to_file==TRUE) ? "a" : "w");
+	if (command_file_fp == NULL) {
+		if (debug == TRUE)
+			syslog(
 				LOG_ERR,
 				"Could not open command file '%s' for %s",
 				command_file,
 				(append_to_file==TRUE) ? "appending" : "writing"
 			);
-                return(ERROR);
+		return(ERROR);
 	}
 
 	using_alternate_dump_file = FALSE;
 
-        return(OK);
+	return(OK);
 }
 
 /* closes the command file */
 static void close_command_file(void) {
-        fclose(command_file_fp);
-        command_file_fp = NULL;
+	fclose(command_file_fp);
+	command_file_fp = NULL;
 
-        return;
+	return;
 }
 
 /* process command line arguments */
@@ -1552,13 +1552,13 @@ int process_arguments(int argc, char **argv) {
 			show_version = TRUE;
 
 		else if (!strcmp(argv[x-1], "-d") || !strcmp(argv[x-1], "--daemon"))
-                        mode = MULTI_PROCESS_DAEMON;
+			mode = MULTI_PROCESS_DAEMON;
 
-                else if (!strcmp(argv[x-1], "-s") || !strcmp(argv[x-1], "--single"))
-                        mode = SINGLE_PROCESS_DAEMON;
+		else if (!strcmp(argv[x-1], "-s") || !strcmp(argv[x-1], "--single"))
+			mode = SINGLE_PROCESS_DAEMON;
 
-                else if (!strcmp(argv[x-1], "-i") || !strcmp(argv[x-1], "--inetd"))
-                        mode = INETD;
+		else if (!strcmp(argv[x-1], "-i") || !strcmp(argv[x-1], "--inetd"))
+			mode = INETD;
 
 		/* config file */
 		else if (!strcmp(argv[x-1], "-c")) {
@@ -1700,7 +1700,7 @@ static int get_group_info(const char *group, gid_t *gid) {
 		/* else we were passed the GID */
 		else
 			*gid = (gid_t)atoi(group);
-	        }
+		}
 	else
 		*gid = getegid();
 
@@ -1771,7 +1771,7 @@ void do_chroot(void) {
 			syslog(LOG_ERR, "can not chroot: %s", strerror(errno));
 			do_exit(STATE_UNKNOWN);
 		}
-        }
+	}
 }
 
 /* handle signals */

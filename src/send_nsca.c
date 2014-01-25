@@ -95,11 +95,11 @@ int main(int argc, char **argv){
 		printf("\n");
 		printf("Options:\n");
 		printf(" <host_address> = The IP address of the host running the NSCA daemon\n");
-		printf(" [port]         = The port on which the daemon is running - default is %d\n", DEFAULT_SERVER_PORT);
-		printf(" [to_sec]       = Number of seconds before connection attempt times out.\n");
-		printf("                  (default timeout is %d seconds)\n", DEFAULT_SOCKET_TIMEOUT);
-		printf(" [delim]        = Delimiter to use when parsing input (defaults to a tab)\n");
-		printf(" [config_file]  = Name of config file to use\n");
+		printf(" [port]		= The port on which the daemon is running - default is %d\n", DEFAULT_SERVER_PORT);
+		printf(" [to_sec]	= Number of seconds before connection attempt times out.\n");
+		printf("		  (default timeout is %d seconds)\n", DEFAULT_SOCKET_TIMEOUT);
+		printf(" [delim]	= Delimiter to use when parsing input (defaults to a tab)\n");
+		printf(" [config_file]	= Name of config file to use\n");
 		printf("\n");
 		printf("Note:\n");
 		printf("This utility is used to send passive check results to the NSCA daemon. Host and\n");
@@ -112,13 +112,13 @@ int main(int argc, char **argv){
 		printf("Host Checks:\n");
 		printf("<host_name>[tab]<return_code>[tab]<plugin_output>[newline]\n\n");
 		printf("When submitting multiple simultaneous results, separate each set with the ETB\n");
-                printf("character (^W or 0x17)\n");
+		printf("character (^W or 0x17)\n");
 	}
 
 	if(show_license == TRUE)
 		display_license();
 
-        if(result != OK || show_help == TRUE || show_license == TRUE || show_version == TRUE)
+	if(result != OK || show_help == TRUE || show_license == TRUE || show_version == TRUE)
 		do_exit(STATE_UNKNOWN);
 
 	/* read the config file */
@@ -167,7 +167,7 @@ int main(int argc, char **argv){
 #endif
 
 	/* initialize encryption/decryption routines with the IV we received from the server */
-        if(encrypt_init(password, encryption_method, received_iv, &CI) != OK) {
+	if(encrypt_init(password, encryption_method, received_iv, &CI) != OK) {
 		printf("Error: Failed to initialize encryption libraries for method %d\n", encryption_method);
 		close(sd);
 		do_exit(STATE_CRITICAL);
@@ -189,8 +189,8 @@ int main(int argc, char **argv){
 		int pos = 0;
 		while (c != 23) {
 			/* in case we don't terminate properly
- 			 * or are in single-input mode
- 			 */
+			 * or are in single-input mode
+			 */
 			if (c == -1)
 				break;
 
@@ -228,13 +228,13 @@ int main(int argc, char **argv){
 		if(ptr4 == NULL) {
 			strcpy(svc_description, "");
 			return_code = atoi(ptr2);
-                        ptr3 = escape_newlines(ptr3);
+			ptr3 = escape_newlines(ptr3);
 			strncpy(plugin_output, ptr3, sizeof(plugin_output)-1);
 		}
 		else {
 			strncpy(svc_description, ptr2, sizeof(svc_description)-1);
 			return_code = atoi(ptr3);
-                        ptr4 = escape_newlines(ptr4);
+			ptr4 = escape_newlines(ptr4);
 			strncpy(plugin_output, ptr4, sizeof(plugin_output)-1);
 		}
 
@@ -317,50 +317,50 @@ static void do_exit(int return_code) {
 
 	/*** CLEAR SENSITIVE INFO FROM MEMORY ***/
 
-        /* overwrite password */
-        clear_buffer(password, sizeof(password));
+	/* overwrite password */
+	clear_buffer(password, sizeof(password));
 
 	/* disguise decryption method */
 	encryption_method = -1;
 
-        exit(return_code);
+	exit(return_code);
 }
 
 /* reads initialization packet (containing IV and timestamp) from server */
 int read_init_packet(int sock){
-        int rc;
-        init_packet receive_packet;
-        int bytes_to_recv;
+	int rc;
+	init_packet receive_packet;
+	int bytes_to_recv;
 
-        /* clear the IV and timestamp */
-        bzero(&received_iv, TRANSMITTED_IV_SIZE);
-        packet_timestamp = (time_t)0;
+	/* clear the IV and timestamp */
+	bzero(&received_iv, TRANSMITTED_IV_SIZE);
+	packet_timestamp = (time_t)0;
 
-        /* get the init packet from the server */
-        bytes_to_recv = sizeof(receive_packet);
-        rc = recvall(sock, (char *)&receive_packet, &bytes_to_recv, socket_timeout);
+	/* get the init packet from the server */
+	bytes_to_recv = sizeof(receive_packet);
+	rc = recvall(sock, (char *)&receive_packet, &bytes_to_recv, socket_timeout);
 
-        /* recv() error or server disconnect */
-        if(rc <= 0){
-                printf("Error: Server closed connection before init packet was received\n");
-                return(ERROR);
+	/* recv() error or server disconnect */
+	if(rc <= 0){
+		printf("Error: Server closed connection before init packet was received\n");
+		return(ERROR);
 	}
 
-        /* we couldn't read the correct amount of data, so bail out */
-        else if(bytes_to_recv != sizeof(receive_packet)) {
-                printf(
+	/* we couldn't read the correct amount of data, so bail out */
+	else if(bytes_to_recv != sizeof(receive_packet)) {
+		printf(
 			"Error: Init packet from server was too short (%d bytes received, %d expected)\n",
 			bytes_to_recv,
 			sizeof(receive_packet)
 		);
-                return(ERROR);
+		return(ERROR);
 	}
 
-        /* transfer the IV and timestamp */
-        memcpy(&received_iv, &receive_packet.iv[0], TRANSMITTED_IV_SIZE);
-        packet_timestamp = (time_t)ntohl(receive_packet.timestamp);
+	/* transfer the IV and timestamp */
+	memcpy(&received_iv, &receive_packet.iv[0], TRANSMITTED_IV_SIZE);
+	packet_timestamp = (time_t)ntohl(receive_packet.timestamp);
 
-        return(OK);
+	return(OK);
 }
 
 /* process command line arguments */

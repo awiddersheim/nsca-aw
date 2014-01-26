@@ -80,7 +80,7 @@ int my_connect(char *host_name, int port, int *sd, char *proto) {
 		(!strcmp(proto, "udp")) ? SOCK_DGRAM : SOCK_STREAM, ptrp->p_proto
 	);
 
-	if (*sd < 0){
+	if (*sd < 0) {
 		printf("Socket creation failed\n");
 		return(STATE_UNKNOWN);
 	}
@@ -203,7 +203,7 @@ int my_inet_aton(register const char *cp, struct in_addr *addr) {
 }
 
 /* sends all data - thanks to Beej's Guide to Network Programming */
-int sendall(int s, char *buf, int *len){
+int sendall(int s, char *buf, int *len) {
 	int total = 0;
 	int bytesleft = *len;
 	int n = 0;
@@ -224,7 +224,7 @@ int sendall(int s, char *buf, int *len){
 }
 
 /* receives all data - modelled after sendall() */
-int recvall(int s, char *buf, int *len, int timeout){
+int recvall(int s, char *buf, int *len, int timeout) {
 	int total = 0;
 	int bytesleft = *len;
 	int n = 0;
@@ -237,7 +237,7 @@ int recvall(int s, char *buf, int *len, int timeout){
 	time(&start_time);
 
 	/* receive all data */
-	while(total < *len){
+	while(total < *len) {
 		/* receive some data */
 		n = recv(s, buf + total, bytesleft, 0);
 

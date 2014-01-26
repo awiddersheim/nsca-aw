@@ -76,7 +76,7 @@ void generate_crc32_table(void) {
 	int i, j;
 
 	poly = 0xEDB88320L;
-	for(i = 0; i < 256; i++){
+	for(i = 0; i < 256; i++) {
 		crc = i;
 		for(j = 8; j > 0; j--) {
 			if (crc & 1)
@@ -91,7 +91,7 @@ void generate_crc32_table(void) {
 }
 
 /* calculates the CRC 32 value for a buffer */
-unsigned long calculate_crc32(char *buffer, int buffer_size){
+unsigned long calculate_crc32(char *buffer, int buffer_size) {
 	register unsigned long crc;
 	int this_char;
 	int current_index;
@@ -259,7 +259,7 @@ int encrypt_init(char *password, int encryption_method, char *received_iv, struc
 	CI->keysize = mcrypt_enc_get_key_size(CI->td);
 
 	/* generate an encryption/decription key using the password */
-	if ((CI->key=(char *)malloc(CI->keysize)) == NULL){
+	if ((CI->key=(char *)malloc(CI->keysize)) == NULL) {
 		syslog(LOG_ERR, "Could not allocate memory for encryption/decryption key");
 		return(ERROR);
 	}
@@ -280,7 +280,7 @@ int encrypt_init(char *password, int encryption_method, char *received_iv, struc
 }
 
 /* encryption routine cleanup */
-void encrypt_cleanup(int encryption_method, struct crypt_instance *CI){
+void encrypt_cleanup(int encryption_method, struct crypt_instance *CI) {
 	/* no crypt instance */
 	if (CI == NULL)
 		return;
@@ -302,7 +302,7 @@ void encrypt_cleanup(int encryption_method, struct crypt_instance *CI){
 }
 
 /* generates IV to use for encrypted communications (function is called by server only, client uses IV it receives from server) */
-static void generate_transmitted_iv(char *transmitted_iv){
+static void generate_transmitted_iv(char *transmitted_iv) {
 	FILE *fp;
 	int x;
 	int seed = 0;
@@ -361,7 +361,7 @@ void encrypt_buffer(
 	/* simple XOR "encryption" - not meant for any real security, just obfuscates data, but its fast... */
 	else if (encryption_method == ENCRYPT_XOR) {
 		/* rotate over IV we received from the server... */
-		for(y = 0, x = 0; y < buffer_size; y++, x++){
+		for(y = 0, x = 0; y < buffer_size; y++, x++) {
 			/* keep rotating over IV */
 			if (x >= TRANSMITTED_IV_SIZE)
 				x = 0;

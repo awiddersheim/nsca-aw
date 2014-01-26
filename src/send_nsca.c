@@ -52,7 +52,7 @@ void alarm_handler(int);
 void clear_password(void);
 static void do_exit(int);
 
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
 	int sd;
 	int rc;
 	int result;
@@ -283,7 +283,7 @@ int main(int argc, char **argv){
 		}
 
 		/* for some reason we didn't send all the bytes we were supposed to */
-		else if (bytes_to_send < sizeof(send_packet)){
+		else if (bytes_to_send < sizeof(send_packet)) {
 			printf(
 				"Warning: Sent only %d of %d bytes to host\n",
 				rc,
@@ -334,7 +334,7 @@ static void do_exit(int return_code) {
 }
 
 /* reads initialization packet (containing IV and timestamp) from server */
-int read_init_packet(int sock){
+int read_init_packet(int sock) {
 	int rc;
 	init_packet receive_packet;
 	int bytes_to_recv;
@@ -348,7 +348,7 @@ int read_init_packet(int sock){
 	rc = recvall(sock, (char *)&receive_packet, &bytes_to_recv, socket_timeout);
 
 	/* recv() error or server disconnect */
-	if (rc <= 0){
+	if (rc <= 0) {
 		printf("Error: Server closed connection before init packet was received\n");
 		return(ERROR);
 	}
@@ -400,7 +400,7 @@ int process_arguments(int argc, char **argv) {
 
 		/* server name/address */
 		else if (!strcmp(argv[x-1], "-H")) {
-			if (x < argc){
+			if (x < argc) {
 				strncpy(server_name, argv[x], sizeof(server_name));
 				server_name[sizeof(server_name)-1] = '\x0';
 				x++;
@@ -421,7 +421,7 @@ int process_arguments(int argc, char **argv) {
 
 		/* timeout when connecting */
 		else if (!strcmp(argv[x-1], "-to")) {
-			if (x < argc){
+			if (x < argc) {
 				socket_timeout = atoi(argv[x]);
 				if (socket_timeout <= 0)
 					return(ERROR);
@@ -443,7 +443,7 @@ int process_arguments(int argc, char **argv) {
 		}
 
 		/* delimiter to use when parsing input */
-		else if (!strcmp(argv[x-1], "-d")){
+		else if (!strcmp(argv[x-1], "-d")) {
 			if (x < argc) {
 				snprintf(delimiter, sizeof(delimiter), "%s", argv[x]);
 				delimiter[sizeof(delimiter)-1] = '\x0';
@@ -470,7 +470,7 @@ void alarm_handler(int sig) {
 
 
 /* read in the configuration file */
-int read_config_file(char *filename){
+int read_config_file(char *filename) {
 	FILE *fp;
 	char input_buffer[MAX_INPUT_BUFFER];
 	char *temp_buffer;

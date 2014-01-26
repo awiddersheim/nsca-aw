@@ -45,7 +45,6 @@ char *nsca_group = NULL;
 char *nsca_chroot = NULL;
 char *check_result_path = NULL;
 
-
 char *pid_file = NULL;
 int  wrote_pid_file = FALSE;
 
@@ -165,7 +164,7 @@ int main(int argc, char **argv) {
 	generate_crc32_table();
 
 	/* how should we handle client connections? */
-	switch(mode){
+	switch(mode) {
 	case INETD:
 		/* chroot if configured */
 		do_chroot();
@@ -231,7 +230,7 @@ int main(int argc, char **argv) {
 				/* wait for connections */
 				wait_for_connections();
 
-				if (sigrestart == TRUE){
+				if (sigrestart == TRUE) {
 					/* free memory */
 					free_memory();
 
@@ -267,7 +266,7 @@ int main(int argc, char **argv) {
 }
 
 /* cleanup */
-static void do_cleanup(void){
+static void do_cleanup(void) {
 	/* free memory */
 	free_memory();
 
@@ -288,7 +287,7 @@ static void do_cleanup(void){
 
 /* free some memory */
 static void free_memory(void) {
-	if (nsca_user){
+	if (nsca_user) {
 		free(nsca_user);
 		nsca_user = NULL;
 	}
@@ -319,7 +318,7 @@ static void do_exit(int return_code) {
 }
 
 /* read in the configuration file */
-static int read_config_file(char *filename){
+static int read_config_file(char *filename) {
 	FILE *fp;
 	char input_buffer[MAX_INPUT_BUFFER];
 	char *varname;
@@ -330,7 +329,7 @@ static int read_config_file(char *filename){
 	fp = fopen(filename, "r");
 
 	/* exit if we couldn't open the config file */
-	if (fp == NULL){
+	if (fp == NULL) {
 		syslog(LOG_ERR, "Could not open config file '%s' for reading\n", filename);
 		return(ERROR);
 	}
@@ -404,7 +403,7 @@ static int read_config_file(char *filename){
 			command_file[sizeof(command_file)-1] = '\0';
 		}
 
-		else if (strstr(input_buffer, "alternate_dump_file")){
+		else if (strstr(input_buffer, "alternate_dump_file")) {
 			if (strlen(varvalue) > sizeof(alternate_dump_file)-1) {
 				syslog(
 					LOG_ERR,
@@ -535,7 +534,7 @@ static int read_config_file(char *filename){
 
 		else if (!strcmp(varname, "max_packet_age")) {
 			max_packet_age = strtoul(varvalue, NULL, 10);
-			if (max_packet_age > 900){
+			if (max_packet_age > 900) {
 				syslog(
 					LOG_ERR,
 					"Max packet age cannot be greater than 15 minutes (900 seconds)\n"
@@ -657,7 +656,7 @@ static void install_child_handler(void) {
 }
 
 /* register a file descriptor to be polled for an event set */
-static void register_poll(short events, int fd){
+static void register_poll(short events, int fd) {
 	int i;
 
 	/* if it's already in the list, just flag the events */
@@ -704,7 +703,7 @@ static void register_read_handler(int fd, void (*fp)(int, void *), void *data) {
 		maxrhand++;
 		rhand = malloc(sizeof(struct handler_entry));
 	}
-	else if (nrhand + 1 > maxrhand){
+	else if (nrhand + 1 > maxrhand) {
 		maxrhand++;
 		rhand = realloc(rhand, sizeof(struct handler_entry) * maxrhand);
 	}
@@ -776,7 +775,7 @@ static int find_whand(int fd) {
 }
 
 /* handle pending events */
-static void handle_events(void){
+static void handle_events(void) {
 	void (*handler)(int, void *);
 	void *data;
 	int i, hand;
@@ -924,7 +923,7 @@ static void wait_for_connections(void) {
 	return;
 }
 
-static void accept_connection(int sock, void *unused){
+static void accept_connection(int sock, void *unused) {
 	int new_sd;
 	pid_t pid;
 	struct sockaddr addr;
@@ -1173,7 +1172,7 @@ static void handle_connection_read(int sock, void *data) {
 	}
 
 	/* we couldn't read the correct amount of data, so bail out */
-	if (bytes_to_recv != packet_length){
+	if (bytes_to_recv != packet_length) {
 		syslog(
 			LOG_ERR,
 			"Data sent from client was too short (%d < %d), aborting...",
@@ -1429,7 +1428,7 @@ static int write_check_result(
 	if (debug == TRUE)
 		syslog(LOG_ERR, "Attempting to write to nagios command pipe");
 
-	if (aggregate_writes == FALSE){
+	if (aggregate_writes == FALSE) {
 		if (open_command_file() == ERROR)
 			return(ERROR);
 	}
@@ -1659,7 +1658,7 @@ static int remove_pid_file(void) {
 static int get_user_info(const char *user, uid_t *uid) {
 	const struct passwd *pw = NULL;
 
-	if (user != NULL){
+	if (user != NULL) {
 		/* see if this is a user name */
 		if (strspn(user, "0123456789") < strlen(user)) {
 			pw = (struct passwd *)getpwnam(user);

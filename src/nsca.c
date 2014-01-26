@@ -975,7 +975,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 
 			/* try and handle temporary errors */
 			if (errno == EWOULDBLOCK || errno == EINTR || errno == ECHILD) {
-				if (mode==MULTI_PROCESS_DAEMON)
+				if (mode == MULTI_PROCESS_DAEMON)
 					sleep(1);
 				else
 					return;
@@ -1043,7 +1043,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 
 		/* close socket prior to exiting */
 		close(new_sd);
-		if (mode==MULTI_PROCESS_DAEMON)
+		if (mode == MULTI_PROCESS_DAEMON)
 			do_exit(STATE_CRITICAL);
 		return;
 	}
@@ -1095,7 +1095,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 	/* initialize encryption/decryption routines (server generates the IV to use and send to the client) */
 	if (encrypt_init(password, decryption_method, NULL, &CI) != OK) {
 		close(conn_entry.sock);
-		if (mode==MULTI_PROCESS_DAEMON)
+		if (mode == MULTI_PROCESS_DAEMON)
 			do_exit(STATE_CRITICAL);
 		return;
 	}
@@ -1129,7 +1129,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 		);
 		encrypt_cleanup(decryption_method,CI);
 		close(conn_entry.sock);
-		if (mode==MULTI_PROCESS_DAEMON)
+		if (mode == MULTI_PROCESS_DAEMON)
 			do_exit(STATE_CRITICAL);
 		return;
 	}
@@ -1138,7 +1138,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 	if (aggregate_writes==TRUE) {
 		if (open_command_file() == ERROR) {
 			close(conn_entry.sock);
-			if (mode==MULTI_PROCESS_DAEMON)
+			if (mode == MULTI_PROCESS_DAEMON)
 				do_exit(STATE_CRITICAL);
 			return;
 		}

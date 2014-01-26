@@ -1059,7 +1059,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 	if (debug==TRUE)
 		syslog(
 			LOG_INFO,
-			"Connection from %s port %d",
+			"Connection from %s:%d",
 			new_conn_entry.ipaddr,
 			new_conn_entry.port
 		);

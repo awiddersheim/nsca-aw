@@ -23,10 +23,8 @@
 
 #include "config.h"
 
-
 #define PROGRAM_VERSION "2.9.1"
 #define MODIFICATION_DATE "01-27-2012"
-
 
 #define OK		0
 #define ERROR		-1
@@ -51,7 +49,6 @@
 /* Changing the lengths below may cause packet failures between clients and servers   */
 /* of different versions.                                                             */
 /**************************************************************************************/
-
 #define MAX_HOSTNAME_LENGTH	64
 #define MAX_DESCRIPTION_LENGTH	128
 #define MAX_PLUGINOUTPUT_LENGTH	4096
@@ -63,9 +60,7 @@
 
 #define BLOCK_DELIMITER  "\x17"
 
-
 /********************* ENCRYPTION TYPES ****************/
-
 #define ENCRYPT_NONE            0       /* no encryption */
 #define ENCRYPT_XOR             1       /* not really encrypted, just obfuscated */
 
@@ -97,21 +92,17 @@
 #define ENCRYPT_SAFERPLUS       26      /* SAFER+ */
 #endif
 
-
-
 /******************** MISC DEFINITIONS *****************/
-
 #define TRANSMITTED_IV_SIZE     128     /* size of IV to transmit - must be as big as largest IV needed for any crypto algorithm */
 
 
 /*************** PACKET STRUCTURE DEFINITIONS **********/
-
 #define NSCA_PACKET_VERSION_3   3		/* packet version identifier */
 #define NSCA_PACKET_VERSION_2	2		/* older packet version identifiers */
 #define NSCA_PACKET_VERSION_1	1
 
 /* data packet containing service check results */
-typedef struct data_packet_struct{
+typedef struct data_packet_struct {
 	int16_t   packet_version;
 	u_int32_t crc32_value;
 	u_int32_t timestamp;
@@ -119,15 +110,13 @@ typedef struct data_packet_struct{
 	char      host_name[MAX_HOSTNAME_LENGTH];
 	char      svc_description[MAX_DESCRIPTION_LENGTH];
 	char      plugin_output[MAX_PLUGINOUTPUT_LENGTH];
-        }data_packet;
+} data_packet;
 
 /* initialization packet containing IV and timestamp */
-typedef struct init_packet_struct{
+typedef struct init_packet_struct {
 	char      iv[TRANSMITTED_IV_SIZE];
 	u_int32_t timestamp;
-        }init_packet;
-
-
+} init_packet;
 
 
 /**************** OPERATING SYSTEM SPECIFIC DEFINITIONS **********/

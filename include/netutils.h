@@ -31,15 +31,10 @@
 
 #include "../include/config.h"
 
-int my_tcp_connect(char *,int,int *);
-int my_connect(char *,int,int *,char *);
+int my_tcp_connect(char *, int, int *);
+int my_connect(char *, int, int *, char *);
 
-int my_inet_aton(register const char *,struct in_addr *);
+int my_inet_aton(register const char *, struct in_addr *);
 
-int sendall(int,char *,int *);
-int recvall(int,char *,int *,int);
-
-
-
-
-
+int sendall(int, char *, int *);
+int recvall(int, char *, int *, int);

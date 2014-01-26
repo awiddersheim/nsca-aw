@@ -1182,7 +1182,6 @@ static void handle_connection_read(int sock, void *data) {
 		);
 		encrypt_cleanup(decryption_method, CI);
 		close(sock);
-		return;
 		if (mode == SINGLE_PROCESS_DAEMON)
 			return;
 		else

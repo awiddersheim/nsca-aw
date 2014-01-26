@@ -241,7 +241,7 @@ int sendall(int s, char *buf, int *len, int timeout) {
 		bytesleft -= n;
 	}
 
-	/* return number of bytes actually send here */
+	/* return number of bytes actually sent here */
 	*len = total;
 
 	/* return -1 on failure, 0 on success */

@@ -1058,7 +1058,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 	/* log info to syslog facility */
 	if (debug==TRUE)
 		syslog(
-			LOG_DEBUG,
+			LOG_INFO,
 			"Connection from %s port %d",
 			new_conn_entry.ipaddr,
 			new_conn_entry.port

@@ -1036,7 +1036,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 		/* log error to syslog facility */
 		syslog(
 			LOG_ERR,
-			"Error: Network server getpeername() failure (%d: %s)",
+			"Network server getpeername() failure (%d: %s)",
 			errno,
 			strerror(errno)
 		);
@@ -1689,7 +1689,7 @@ static int get_user_info(const char *user, uid_t *uid) {
 			if (pw != NULL)
 				*uid = (uid_t)(pw->pw_uid);
 			else
-				syslog(LOG_ERR, "Warning: Could not get passwd entry for '%s'", user);
+				syslog(LOG_WARNING, "Could not get passwd entry for '%s'", user);
 			endpwent();
 		}
 
@@ -1715,7 +1715,7 @@ static int get_group_info(const char *group, gid_t *gid) {
 			if (grp != NULL)
 				*gid = (gid_t)(grp->gr_gid);
 			else
-				syslog(LOG_ERR, "Warning: Could not get group entry for '%s'", group);
+				syslog(LOG_WARNING, "Could not get group entry for '%s'", group);
 			endgrent();
 		}
 
@@ -1742,8 +1742,8 @@ static int drop_privileges(const char *user, uid_t uid, gid_t gid) {
 	if (gid != getegid()) {
 		if (setgid(gid) == -1) {
 			syslog(
-				LOG_ERR,
-				"Warning: Could not set effective GID=%d", (int)gid
+				LOG_WARNING,
+				"Could not set effective GID=%d", (int)gid
 			);
 			return(ERROR);
 		}
@@ -1755,13 +1755,13 @@ static int drop_privileges(const char *user, uid_t uid, gid_t gid) {
 		if (initgroups(user, gid) == -1) {
 			if (errno == EPERM)
 				syslog(
-					LOG_ERR,
-					"Warning: Unable to change supplementary groups using initgroups()"
+					LOG_WARNING,
+					"Unable to change supplementary groups using initgroups()"
 				);
 			else {
 				syslog(
-					LOG_ERR,
-					"Warning: Possibly root user failed dropping privileges with initgroups()"
+					LOG_WARNING,
+					"Possible that root user failed dropping privileges with initgroups()"
 				);
 				return(ERROR);
 			}
@@ -1770,7 +1770,7 @@ static int drop_privileges(const char *user, uid_t uid, gid_t gid) {
 #endif
 
 	if (setuid(uid) == -1) {
-		syslog(LOG_ERR, "Warning: Could not set effective UID=%d", (int)uid);
+		syslog(LOG_WARNING, "Could not set effective UID=%d", (int)uid);
 		return(ERROR);
 	}
 

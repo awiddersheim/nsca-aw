@@ -1302,7 +1302,7 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 				"HOST CHECK -> Host Name: '%s', Return Code: '%d', Output: '%s', Peer IP: '%s', Peer Port: '%d'",
 				host_name,
 				return_code,
-				plugin_output
+				plugin_output,
 				conn_entry.ipaddr,
 				conn_entry.port
 			);

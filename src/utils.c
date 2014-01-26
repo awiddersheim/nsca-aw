@@ -44,21 +44,21 @@ char *escape_newlines(char *rawbuf) {
 	char *newbuf=NULL;
 	register int x, y;
 
-	if(rawbuf == NULL)
+	if (rawbuf == NULL)
 		return(NULL);
 
 	/* allocate enough memory to escape all chars if necessary */
-	if((newbuf=malloc((strlen(rawbuf)*2)+1)) == NULL)
+	if ((newbuf=malloc((strlen(rawbuf)*2)+1)) == NULL)
 		return(NULL);
 
 	for(x = 0, y = 0; rawbuf[x] != (char)'\x0'; x++) {
 		/* escape backslashes */
-		if(rawbuf[x] == '\\') {
+		if (rawbuf[x] == '\\') {
 			newbuf[y++] = '\\';
 			newbuf[y++] = '\\';
 		}
 		/* escape newlines */
-		else if(rawbuf[x] == '\n') {
+		else if (rawbuf[x] == '\n') {
 			newbuf[y++] = '\\';
 			newbuf[y++] = 'n';
 		}
@@ -79,7 +79,7 @@ void generate_crc32_table(void) {
 	for(i = 0; i < 256; i++){
 		crc = i;
 		for(j = 8; j > 0; j--) {
-			if(crc & 1)
+			if (crc & 1)
 				crc = (crc>>1)^poly;
 			else
 				crc>>=1;
@@ -117,13 +117,13 @@ int encrypt_init(char *password, int encryption_method, char *received_iv, struc
 	CI = malloc(sizeof(struct crypt_instance));
 	*CIptr = CI;
 
-	if(CI == NULL) {
+	if (CI == NULL) {
 		syslog(LOG_ERR, "Could not allocate memory for crypt instance");
 		return(ERROR);
 	}
 
 	/* server generates IV used for encryption */
-	if(received_iv == NULL)
+	if (received_iv == NULL)
 		generate_transmitted_iv(CI->transmitted_iv);
 	/* client recieves IV from server */
 	else
@@ -137,7 +137,7 @@ int encrypt_init(char *password, int encryption_method, char *received_iv, struc
 #endif
 
 	/* XOR or no encryption */
-	if(encryption_method == ENCRYPT_NONE || encryption_method == ENCRYPT_XOR)
+	if (encryption_method == ENCRYPT_NONE || encryption_method == ENCRYPT_XOR)
 		return(OK);
 
 #ifdef HAVE_LIBMCRYPT
@@ -212,28 +212,41 @@ int encrypt_init(char *password, int encryption_method, char *received_iv, struc
 	}
 
 #ifdef DEBUG
-	syslog(LOG_INFO, "Attempting to initialize '%s' crypto algorithm...", CI->mcrypt_algorithm);
+	syslog(
+		LOG_INFO,
+		"Attempting to initialize '%s' crypto algorithm...",
+		CI->mcrypt_algorithm
+	);
 #endif
 
 	/* open encryption module */
-	if((CI->td=mcrypt_module_open(CI->mcrypt_algorithm, NULL, CI->mcrypt_mode, NULL)) == MCRYPT_FAILED) {
-		syslog(LOG_ERR, "Could not open mcrypt algorithm '%s' with mode '%s'", CI->mcrypt_algorithm, CI->mcrypt_mode);
+	if ((CI->td=mcrypt_module_open(CI->mcrypt_algorithm, NULL, CI->mcrypt_mode, NULL)) == MCRYPT_FAILED) {
+		syslog(
+			LOG_ERR,
+			"Could not open mcrypt algorithm '%s' with mode '%s'",
+			CI->mcrypt_algorithm,
+			CI->mcrypt_mode
+		);
 		return(ERROR);
 	}
 
 #ifdef DEBUG
-	syslog(LOG_INFO, "Using '%s' as crypto algorithm...", CI->mcrypt_algorithm);
+	syslog(
+		LOG_INFO,
+		"Using '%s' as crypto algorithm...",
+		CI->mcrypt_algorithm
+	);
 #endif
 
 	/* determine size of IV buffer for this algorithm */
 	iv_size = mcrypt_enc_get_iv_size(CI->td);
-	if(iv_size > TRANSMITTED_IV_SIZE) {
+	if (iv_size > TRANSMITTED_IV_SIZE) {
 		syslog(LOG_ERR, "IV size for crypto algorithm exceeds limits");
 		return(ERROR);
 	}
 
 	/* allocate memory for IV buffer */
-	if((CI->IV=(char *)malloc(iv_size)) ==NULL ) {
+	if ((CI->IV=(char *)malloc(iv_size)) ==NULL ) {
 		syslog(LOG_ERR, "Could not allocate memory for IV buffer");
 		return(ERROR);
 	}
@@ -246,14 +259,14 @@ int encrypt_init(char *password, int encryption_method, char *received_iv, struc
 	CI->keysize = mcrypt_enc_get_key_size(CI->td);
 
 	/* generate an encryption/decription key using the password */
-	if((CI->key=(char *)malloc(CI->keysize)) == NULL){
+	if ((CI->key=(char *)malloc(CI->keysize)) == NULL){
 		syslog(LOG_ERR, "Could not allocate memory for encryption/decryption key");
 		return(ERROR);
 	}
 
 	bzero(CI->key,CI->keysize);
 
-	if(CI->keysize < strlen(password))
+	if (CI->keysize < strlen(password))
 		strncpy(CI->key, password, CI->keysize);
 	else
 		strncpy(CI->key, password, strlen(password));
@@ -269,13 +282,13 @@ int encrypt_init(char *password, int encryption_method, char *received_iv, struc
 /* encryption routine cleanup */
 void encrypt_cleanup(int encryption_method, struct crypt_instance *CI){
 	/* no crypt instance */
-	if(CI == NULL)
+	if (CI == NULL)
 		return;
 
 #ifdef HAVE_LIBMCRYPT
 	/* mcrypt cleanup */
-	if(encryption_method != ENCRYPT_NONE && encryption_method != ENCRYPT_XOR) {
-		if(mcrypt_initialized == TRUE)
+	if (encryption_method != ENCRYPT_NONE && encryption_method != ENCRYPT_XOR) {
+		if (mcrypt_initialized == TRUE)
 			mcrypt_generic_end(CI->td);
 		free(CI->key);
 		CI->key = NULL;
@@ -300,7 +313,7 @@ static void generate_transmitted_iv(char *transmitted_iv){
 
 	/* try to get seed value from /dev/urandom, as its a better source of entropy */
 	fp = fopen("/dev/urandom", "r");
-	if(fp != NULL) {
+	if (fp != NULL) {
 		seed = fgetc(fp);
 		fclose(fp);
 	}
@@ -318,29 +331,39 @@ static void generate_transmitted_iv(char *transmitted_iv){
 }
 
 /* encrypt a buffer */
-void encrypt_buffer(char *buffer, int buffer_size, char *password, int encryption_method, struct crypt_instance *CI){
+void encrypt_buffer(
+	char *buffer,
+	int buffer_size,
+	char *password,
+	int encryption_method,
+	struct crypt_instance *CI
+) {
 	int x;
 	int y;
 	int password_length;
 
 #ifdef DEBUG
-	syslog(LOG_INFO, "Encrypting with algorithm #%d", encryption_method);
+	syslog(
+		LOG_INFO,
+		"Encrypting with algorithm #%d",
+		encryption_method
+	);
 #endif
 
 	/* no crypt instance */
-	if(CI == NULL)
+	if (CI == NULL)
 		return;
 
 	/* no encryption */
-	if(encryption_method == ENCRYPT_NONE)
+	if (encryption_method == ENCRYPT_NONE)
 		return;
 
 	/* simple XOR "encryption" - not meant for any real security, just obfuscates data, but its fast... */
-	else if(encryption_method == ENCRYPT_XOR) {
+	else if (encryption_method == ENCRYPT_XOR) {
 		/* rotate over IV we received from the server... */
 		for(y = 0, x = 0; y < buffer_size; y++, x++){
 			/* keep rotating over IV */
-			if(x >= TRANSMITTED_IV_SIZE)
+			if (x >= TRANSMITTED_IV_SIZE)
 				x = 0;
 
 			buffer[y]^=CI->transmitted_iv[x];
@@ -351,7 +374,7 @@ void encrypt_buffer(char *buffer, int buffer_size, char *password, int encryptio
 
 		for(y = 0, x = 0; y < buffer_size; y++, x++) {
 			/* keep rotating over password */
-			if(x >= password_length)
+			if (x >= password_length)
 				x = 0;
 
 			buffer[y]^=password[x];
@@ -373,23 +396,33 @@ void encrypt_buffer(char *buffer, int buffer_size, char *password, int encryptio
 }
 
 /* decrypt a buffer */
-void decrypt_buffer(char *buffer, int buffer_size, char *password, int encryption_method, struct crypt_instance *CI) {
+void decrypt_buffer(
+	char *buffer,
+	int buffer_size,
+	char *password,
+	int encryption_method,
+	struct crypt_instance *CI
+) {
 	int x = 0;
 
 #ifdef DEBUG
-	syslog(LOG_INFO, "Decrypting with algorithm #%d", encryption_method);
+	syslog(
+		LOG_INFO,
+		"Decrypting with algorithm #%d",
+		encryption_method
+	);
 #endif
 
 	/* no crypt instance */
-	if(CI == NULL)
+	if (CI == NULL)
 		return;
 
 	/* no encryption */
-	if(encryption_method == ENCRYPT_NONE)
+	if (encryption_method == ENCRYPT_NONE)
 		return;
 
 	/* XOR "decryption" is the same as encryption */
-	else if(encryption_method == ENCRYPT_XOR)
+	else if (encryption_method == ENCRYPT_XOR)
 		encrypt_buffer(buffer, buffer_size, password, encryption_method, CI);
 
 #ifdef HAVE_LIBMCRYPT
@@ -424,7 +457,7 @@ void randomize_buffer(char *buffer, int buffer_size) {
 
 	/* try to get seed value from /dev/urandom, as its a better source of entropy */
 	fp = fopen("/dev/urandom", "r");
-	if(fp != NULL) {
+	if (fp != NULL) {
 		seed = fgetc(fp);
 		fclose(fp);
 	}
@@ -448,7 +481,7 @@ void strip(char *buffer) {
 
 	for(x = strlen(buffer); x >= 1; x--) {
 		index = x - 1;
-		if(buffer[index] == ' ' || buffer[index] == '\r' || buffer[index] == '\n' || buffer[index] == '\t')
+		if (buffer[index] == ' ' || buffer[index] == '\r' || buffer[index] == '\n' || buffer[index] == '\t')
 			buffer[index] = '\x0';
 		else
 			break;

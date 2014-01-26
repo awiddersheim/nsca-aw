@@ -1110,7 +1110,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 	rc = sendall(conn_entry.sock, (char *)&send_packet, &bytes_to_send);
 
 	/* there was an error sending the packet */
-	if (rc ==- 1) {
+	if (rc == -1) {
 		syslog(LOG_ERR, "Could not send init packet to client\n");
 		encrypt_cleanup(decryption_method, CI);
 		close(conn_entry.sock);

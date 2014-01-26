@@ -800,7 +800,10 @@ static void handle_events(void) {
 	if (sigrestart == TRUE || sigshutdown == TRUE)
 		return;
 
-	poll(pfds, npfds, -1);
+	/* poll with a timeout */
+	poll(pfds, npfds, 1000);
+
+	/* loop through each fd being polled */
 	for (i = 0; i < npfds; i++) {
 		if ((pfds[i].events&POLLIN) && (pfds[i].revents&(POLLIN|POLLERR|POLLHUP|POLLNVAL))) {
 			pfds[i].events&=~POLLIN;

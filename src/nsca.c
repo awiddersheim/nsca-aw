@@ -1089,8 +1089,35 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 		syslog(LOG_INFO, "Handling the connection...");
 
 	/* socket should be non-blocking */
-	flags = fcntl(conn_entry.sock, F_GETFL, 0);
-	fcntl(conn_entry.sock, F_SETFL, flags|O_NONBLOCK);
+	if ((flags = fcntl(conn_entry.sock, F_GETFL, 0)) < 0) {
+		syslog(
+			LOG_ERR,
+			"Could not get flags of socket %s:%d (%d: %s)",
+			conn_entry.ipaddr,
+			conn_entry.port,
+			errno,
+			strerror(errno)
+		);
+		close(conn_entry.sock);
+		if (mode == MULTI_PROCESS_DAEMON)
+			do_exit(STATE_CRITICAL);
+		return;
+	}
+
+	if (fcntl(conn_entry.sock, F_SETFL, flags|O_NONBLOCK) < 0) {
+		syslog(
+			LOG_ERR,
+			"Could not set flags of socket %s:%d (%d: %s)",
+			conn_entry.ipaddr,
+			conn_entry.port,
+			errno,
+			strerror(errno)
+		);
+		close(conn_entry.sock);
+		if (mode == MULTI_PROCESS_DAEMON)
+			do_exit(STATE_CRITICAL);
+		return;
+	}
 
 	/* initialize encryption/decryption routines (server generates the IV to use and send to the client) */
 	if (encrypt_init(password, decryption_method, NULL, &CI) != OK) {

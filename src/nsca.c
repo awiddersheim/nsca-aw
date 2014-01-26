@@ -1134,7 +1134,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 
 	/* send client the initial packet */
 	bytes_to_send = sizeof(send_packet);
-	rc = sendall(conn_entry.sock, (char *)&send_packet, &bytes_to_send);
+	rc = sendall(conn_entry.sock, (char *)&send_packet, &bytes_to_send, socket_timeout);
 
 	/* there was an error sending the packet */
 	if (rc == -1) {

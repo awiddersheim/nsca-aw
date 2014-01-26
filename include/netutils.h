@@ -36,5 +36,5 @@ int my_connect(char *, int, int *, char *);
 
 int my_inet_aton(register const char *, struct in_addr *);
 
-int sendall(int, char *, int *);
+int sendall(int, char *, int *, int);
 int recvall(int, char *, int *, int);

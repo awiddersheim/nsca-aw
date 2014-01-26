@@ -273,7 +273,7 @@ int main(int argc, char **argv) {
 
 		/* send the packet */
 		bytes_to_send=sizeof(send_packet);
-		rc = sendall(sd,(char *)&send_packet, &bytes_to_send);
+		rc = sendall(sd,(char *)&send_packet, &bytes_to_send, socket_timeout);
 
 		/* there was an error sending the packet */
 		if (rc == -1) {

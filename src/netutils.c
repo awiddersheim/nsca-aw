@@ -203,15 +203,40 @@ int my_inet_aton(register const char *cp, struct in_addr *addr) {
 }
 
 /* sends all data - thanks to Beej's Guide to Network Programming */
-int sendall(int s, char *buf, int *len) {
+int sendall(int s, char *buf, int *len, int timeout) {
 	int total = 0;
 	int bytesleft = *len;
 	int n = 0;
+	time_t start_time;
+	time_t current_time;
+	struct timespec req;
+
+	/* create timespec for nanosleep */
+	req.tv_sec = 0;
+	req.tv_nsec = 300000000L; /* 300 ms */
 
 	while(total < *len) {
+		/* check timeout */
+		time(&current_time);
+		if (current_time - start_time > timeout)
+			return(-1);
+
+		/* send some data */
 		n = send(s, buf + total, bytesleft, 0);
 		if (n == -1)
 			break;
+
+		/* no data sent because buffer is full (non-blocking socket) */
+		if (n == -1 && errno == EAGAIN) {
+			nanosleep(&req, NULL);
+			continue;
+		}
+
+		/* send error or client disconnect */
+		else if (n <= 0)
+			break;
+
+		/* apply bytes received */
 		total += n;
 		bytesleft -= n;
 	}

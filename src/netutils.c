@@ -255,30 +255,39 @@ int recvall(int s, char *buf, int *len, int timeout) {
 	int n = 0;
 	time_t start_time;
 	time_t current_time;
+	struct timespec req;
+
+	/* create timespec for nanosleep */
+	req.tv_sec = 0;
+	req.tv_nsec = 300000000L; /* 300 ms */
 
 	/* clear the receive buffer */
 	bzero(buf, *len);
 
+	/* get start time */
 	time(&start_time);
 
 	/* receive all data */
 	while(total < *len) {
+		/* check timeout */
+		time(&current_time);
+		if (current_time - start_time > timeout)
+			return(-1);
+
 		/* receive some data */
 		n = recv(s, buf + total, bytesleft, 0);
 
 		/* no data has arrived yet (non-blocking socket) */
 		if (n == -1 && errno == EAGAIN) {
-			time(&current_time);
-			if (current_time-start_time>timeout)
-				break;
-			sleep(1);
+			nanosleep(&req, NULL);
 			continue;
 		}
+
 		/* receive error or client disconnect */
 		else if (n <= 0)
 			break;
 
-		/* apply bytes we received */
+		/* apply bytes received */
 		total += n;
 		bytesleft -= n;
 	}

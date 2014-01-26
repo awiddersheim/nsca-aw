@@ -22,17 +22,23 @@
  *
  ************************************************************************/
 
+struct conn_entry {
+	int sock;
+	char *ipaddr;
+	int port;
+};
+
 struct handler_entry {
-	void (*handler)(int, void *);
+	void (*handler)(struct conn_entry, void *);
 	void *data;
-	int fd;
+	struct conn_entry conn_entry;
 };
 
 static void handle_events(void);
 static void wait_for_connections(void);
-static void handle_connection(int, void *);
-static void accept_connection(int, void *);
-static void handle_connection_read(int, void *);
+static void handle_connection(struct conn_entry, void *);
+static void accept_connection(struct conn_entry, void *);
+static void handle_connection_read(struct conn_entry, void *);
 static void install_child_handler(void);
 
 static int process_arguments(int, char **);

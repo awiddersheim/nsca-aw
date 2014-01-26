@@ -78,6 +78,7 @@ int main(int argc, char **argv) {
 	int result;
 	uid_t uid = -1;
 	gid_t gid = -1;
+	struct conn_entry conn_entry;
 
 	/* process command-line arguments */
 	result = process_arguments(argc, argv);
@@ -169,8 +170,13 @@ int main(int argc, char **argv) {
 		/* chroot if configured */
 		do_chroot();
 
+		/* create conn_entry struct */
+		conn_entry.sock = 0;
+		conn_entry.ipaddr = "127.0.0.1";
+		conn_entry.port = 0;
+
 		/* if we're running under inetd, handle one connection and get out */
-		handle_connection(0, NULL);
+		handle_connection(conn_entry, NULL);
 		break;
 
 	case MULTI_PROCESS_DAEMON:
@@ -683,15 +689,20 @@ static void register_poll(short events, int fd) {
 }
 
 /* register a read handler */
-static void register_read_handler(int fd, void (*fp)(int, void *), void *data) {
+static void register_read_handler(
+	struct conn_entry conn_entry,
+	void (*fp)(struct conn_entry, void *),
+	void *data
+) {
 	int i;
 
 	/* register our interest in this descriptor */
-	register_poll(POLLIN, fd);
+	register_poll(POLLIN, conn_entry.sock);
 
 	/* if it's already in the list, just update the handler */
 	for (i = 0; i < nrhand; i++) {
-		if (rhand[i].fd == fd) {
+		if (rhand[i].conn_entry.sock == conn_entry.sock) {
+			rhand[i].conn_entry = conn_entry;
 			rhand[i].handler = fp;
 			rhand[i].data = data;
 			return;
@@ -708,22 +719,27 @@ static void register_read_handler(int fd, void (*fp)(int, void *), void *data) {
 		rhand = realloc(rhand, sizeof(struct handler_entry) * maxrhand);
 	}
 
-	rhand[nrhand].fd = fd;
+	rhand[nrhand].conn_entry = conn_entry;
 	rhand[nrhand].handler = fp;
 	rhand[nrhand].data = data;
 	nrhand++;
 }
 
 /* register a write handler */
-static void register_write_handler(int fd, void (*fp)(int, void *), void *data) {
+static void register_write_handler(
+	struct conn_entry conn_entry,
+	void (*fp)(struct conn_entry, void *),
+	void *data
+) {
 	int i;
 
 	/* register our interest in this descriptor */
-	register_poll(POLLOUT, fd);
+	register_poll(POLLOUT, conn_entry.sock);
 
 	/* if it's already in the list, just update the handler */
 	for (i = 0; i < nwhand; i++) {
-		if (whand[i].fd == fd) {
+		if (whand[i].conn_entry.sock == conn_entry.sock) {
+			whand[i].conn_entry = conn_entry;
 			whand[i].handler = fp;
 			whand[i].data = data;
 			return;
@@ -740,7 +756,7 @@ static void register_write_handler(int fd, void (*fp)(int, void *), void *data) 
 		whand = realloc(whand, sizeof(struct handler_entry) * maxwhand);
 	}
 
-	whand[nwhand].fd = fd;
+	whand[nwhand].conn_entry = conn_entry;
 	whand[nwhand].handler = fp;
 	whand[nwhand].data = data;
 	nwhand++;
@@ -751,7 +767,7 @@ static int find_rhand(int fd) {
 	int i;
 
 	for (i = 0; i < nrhand; i++) {
-		if (rhand[i].fd == fd)
+		if (rhand[i].conn_entry.sock == fd)
 			return(i);
 	}
 
@@ -765,7 +781,7 @@ static int find_whand(int fd) {
 	int i;
 
 	for (i = 0; i < nwhand; i++) {
-		if (whand[i].fd == fd)
+		if (whand[i].conn_entry.sock == fd)
 			return(i);
 	}
 
@@ -776,7 +792,7 @@ static int find_whand(int fd) {
 
 /* handle pending events */
 static void handle_events(void) {
-	void (*handler)(int, void *);
+	void (*handler)(struct conn_entry, void *);
 	void *data;
 	int i, hand;
 
@@ -793,7 +809,7 @@ static void handle_events(void) {
 			data = rhand[hand].data;
 			rhand[hand].handler = NULL;
 			rhand[hand].data = NULL;
-			handler(pfds[i].fd, data);
+			handler(rhand[hand].conn_entry, data);
 		}
 
 		if ((pfds[i].events&POLLOUT) && (pfds[i].revents&(POLLOUT|POLLERR|POLLHUP|POLLNVAL))) {
@@ -803,7 +819,7 @@ static void handle_events(void) {
 			data = whand[hand].data;
 			whand[hand].handler = NULL;
 			whand[hand].data = NULL;
-			handler(pfds[i].fd, data);
+			handler(whand[hand].conn_entry, data);
 		}
 	}
 
@@ -823,6 +839,7 @@ static void wait_for_connections(void) {
 	struct sockaddr_in myname;
 	int sock = 0;
 	int flag = 1;
+	struct conn_entry conn_entry;
 
 	/* create a socket for listening */
 	sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -899,9 +916,14 @@ static void wait_for_connections(void) {
 	if (mode == MULTI_PROCESS_DAEMON)
 		fcntl(sock, F_SETFL, O_NONBLOCK);
 
+        /* create conn_entry */
+        conn_entry.sock = sock;
+        conn_entry.ipaddr = NULL;
+        conn_entry.port = 0;
+
 	/* listen for connection requests */
 	if (mode == SINGLE_PROCESS_DAEMON)
-		register_read_handler(sock, accept_connection, NULL);
+		register_read_handler(conn_entry, accept_connection, NULL);
 
 	while(1) {
 		/* bail out if necessary */
@@ -913,7 +935,7 @@ static void wait_for_connections(void) {
 
 		/* accept a new connection */
 		if (mode == MULTI_PROCESS_DAEMON)
-			accept_connection(sock, NULL);
+			accept_connection(conn_entry, NULL);
 
 		/* handle the new connection (if any) */
 		else
@@ -923,25 +945,26 @@ static void wait_for_connections(void) {
 	return;
 }
 
-static void accept_connection(int sock, void *unused) {
+static void accept_connection(struct conn_entry conn_entry, void *unused){
 	int new_sd;
 	pid_t pid;
 	struct sockaddr addr;
 	struct sockaddr_in *nptr;
 	socklen_t addrlen;
 	int rc;
+	struct conn_entry new_conn_entry;
 #ifdef HAVE_LIBWRAP
 	struct request_info req;
 #endif
 
 	/* DO NOT REMOVE! 01/29/2007 single process daemon will fail if this is removed */
 	if (mode == SINGLE_PROCESS_DAEMON)
-		register_read_handler(sock, accept_connection, NULL);
+		register_read_handler(conn_entry, accept_connection, NULL);
 
 	/* wait for a connection request */
 	while(1) {
 		/* we got a live one... */
-		if ((new_sd=accept(sock,0,0)) >= 0)
+		if ((new_sd=accept(conn_entry.sock,0,0)) >= 0)
 			break;
 
 		/* handle the error */
@@ -974,7 +997,7 @@ static void accept_connection(int sock, void *unused) {
 		);
 
 		/* close socket prior to exiting */
-		close(sock);
+		close(conn_entry.sock);
 		if (mode == MULTI_PROCESS_DAEMON)
 			do_exit(STATE_CRITICAL);
 		return;
@@ -1005,7 +1028,7 @@ static void accept_connection(int sock, void *unused) {
 		}
 		else
 			/* child does not need to listen for connections */
-			close(sock);
+			close(conn_entry.sock);
 	}
 
 	/* find out who just connected... */
@@ -1030,28 +1053,33 @@ static void accept_connection(int sock, void *unused) {
 
 	nptr = (struct sockaddr_in *)&addr;
 
+	/* create conn_entry */
+	new_conn_entry.sock = new_sd;
+	new_conn_entry.ipaddr = inet_ntoa(nptr->sin_addr);
+	new_conn_entry.port = nptr->sin_port;
+
 	/* log info to syslog facility */
 	if (debug==TRUE)
 		syslog(
 			LOG_DEBUG,
 			"Connection from %s port %d",
-			inet_ntoa(nptr->sin_addr),
-			nptr->sin_port
+			new_conn_entry.ipaddr,
+			new_conn_entry.port
 		);
 
 	/* handle the connection */
 	if (mode == SINGLE_PROCESS_DAEMON)
 		/* mark the connection as ready to be handled */
-		register_write_handler(new_sd, handle_connection, NULL);
+		register_write_handler(new_conn_entry, handle_connection, NULL);
 	else
 		/* handle the client connection */
-		handle_connection(new_sd, NULL);
+		handle_connection(new_conn_entry, NULL);
 
 	return;
 }
 
 /* handle a client connection */
-static void handle_connection(int sock, void *data) {
+static void handle_connection(struct conn_entry conn_entry, void *data) {
 	init_packet send_packet;
 	int bytes_to_send;
 	int rc;
@@ -1064,12 +1092,12 @@ static void handle_connection(int sock, void *data) {
 		syslog(LOG_INFO, "Handling the connection...");
 
 	/* socket should be non-blocking */
-	fcntl(sock, F_GETFL, &flags);
-	fcntl(sock, F_SETFL, flags|O_NONBLOCK);
+	fcntl(conn_entry.sock, F_GETFL, &flags);
+	fcntl(conn_entry.sock, F_SETFL, flags|O_NONBLOCK);
 
 	/* initialize encryption/decryption routines (server generates the IV to use and send to the client) */
 	if (encrypt_init(password, decryption_method, NULL, &CI) != OK) {
-		close(sock);
+		close(conn_entry.sock);
 		if (mode==MULTI_PROCESS_DAEMON)
 			do_exit(STATE_CRITICAL);
 		return;
@@ -1082,13 +1110,13 @@ static void handle_connection(int sock, void *data) {
 
 	/* send client the initial packet */
 	bytes_to_send = sizeof(send_packet);
-	rc = sendall(sock, (char *)&send_packet, &bytes_to_send);
+	rc = sendall(conn_entry.sock, (char *)&send_packet, &bytes_to_send);
 
 	/* there was an error sending the packet */
 	if (rc ==- 1) {
 		syslog(LOG_ERR, "Could not send init packet to client\n");
 		encrypt_cleanup(decryption_method, CI);
-		close(sock);
+		close(conn_entry.sock);
 		if (mode == MULTI_PROCESS_DAEMON)
 			do_exit(STATE_CRITICAL);
 		return;
@@ -1103,7 +1131,7 @@ static void handle_connection(int sock, void *data) {
 			sizeof(send_packet)
 		);
 		encrypt_cleanup(decryption_method,CI);
-		close(sock);
+		close(conn_entry.sock);
 		if (mode==MULTI_PROCESS_DAEMON)
 			do_exit(STATE_CRITICAL);
 		return;
@@ -1112,7 +1140,7 @@ static void handle_connection(int sock, void *data) {
 	/* open the command file if we're aggregating writes */
 	if (aggregate_writes==TRUE) {
 		if (open_command_file() == ERROR) {
-			close(sock);
+			close(conn_entry.sock);
 			if (mode==MULTI_PROCESS_DAEMON)
 				do_exit(STATE_CRITICAL);
 			return;
@@ -1120,17 +1148,17 @@ static void handle_connection(int sock, void *data) {
 	}
 
 	if (mode == SINGLE_PROCESS_DAEMON)
-		register_read_handler(sock, handle_connection_read, (void *)CI);
+		register_read_handler(conn_entry, handle_connection_read, (void *)CI);
 	else {
 		while(1)
-			handle_connection_read(sock, (void *)CI);
+			handle_connection_read(conn_entry, (void *)CI);
 	}
 
 	return;
 }
 
 /* handle reading from a client connection */
-static void handle_connection_read(int sock, void *data) {
+static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	data_packet receive_packet;
 	u_int32_t packet_crc32;
 	u_int32_t calculated_crc32;
@@ -1152,7 +1180,7 @@ static void handle_connection_read(int sock, void *data) {
 
 	/* read the packet from the client */
 	bytes_to_recv = sizeof(receive_packet);
-	rc = recvall(sock, (char *)&receive_packet, &bytes_to_recv, socket_timeout);
+	rc = recvall(conn_entry.sock, (char *)&receive_packet, &bytes_to_recv, socket_timeout);
 
 	/* recv() error or client disconnect */
 	if (rc <= 0) {
@@ -1163,7 +1191,7 @@ static void handle_connection_read(int sock, void *data) {
 			if (debug == TRUE)
 				syslog(LOG_ERR, "End of connection...");
 			encrypt_cleanup(decryption_method, CI);
-			close(sock);
+			close(conn_entry.sock);
 			if (mode == SINGLE_PROCESS_DAEMON)
 				return;
 			else
@@ -1180,7 +1208,7 @@ static void handle_connection_read(int sock, void *data) {
 			packet_length
 		);
 		encrypt_cleanup(decryption_method, CI);
-		close(sock);
+		close(conn_entry.sock);
 		if (mode == SINGLE_PROCESS_DAEMON)
 			return;
 		else
@@ -1189,7 +1217,7 @@ static void handle_connection_read(int sock, void *data) {
 
 	/* if we're single-process, we need to set things up so we handle the next packet after this one... */
 	if (mode == SINGLE_PROCESS_DAEMON)
-		register_read_handler(sock, handle_connection_read, (void *)CI);
+		register_read_handler(conn_entry, handle_connection_read, (void *)CI);
 
 	/* decrypt the packet */
 	decrypt_buffer((char *)&receive_packet, packet_length, password, decryption_method, CI);
@@ -1202,8 +1230,7 @@ static void handle_connection_read(int sock, void *data) {
 		);
 
 		/*return;*/
-		close(sock);
-
+		close(conn_entry.sock);
 		if (mode == SINGLE_PROCESS_DAEMON)
 			return;
 		else
@@ -1221,7 +1248,7 @@ static void handle_connection_read(int sock, void *data) {
 		);
 
 		/*return;*/
-		close(sock);
+		close(conn_entry.sock);
 		if (mode == SINGLE_PROCESS_DAEMON)
 			return;
 		else
@@ -1250,7 +1277,7 @@ static void handle_connection_read(int sock, void *data) {
 			host_name,
 			packet_age
 		);
-		close(sock);
+		close(conn_entry.sock);
 		if (mode == SINGLE_PROCESS_DAEMON)
 			return;
 		else

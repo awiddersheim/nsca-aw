@@ -1089,7 +1089,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 		syslog(LOG_INFO, "Handling the connection...");
 
 	/* socket should be non-blocking */
-	fcntl(conn_entry.sock, F_GETFL, &flags);
+	flags = fcntl(conn_entry.sock, F_GETFL, 0);
 	fcntl(conn_entry.sock, F_SETFL, flags|O_NONBLOCK);
 
 	/* initialize encryption/decryption routines (server generates the IV to use and send to the client) */

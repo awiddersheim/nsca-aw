@@ -951,7 +951,6 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 	struct sockaddr addr;
 	struct sockaddr_in *nptr;
 	socklen_t addrlen;
-	int rc;
 	struct conn_entry new_conn_entry;
 #ifdef HAVE_LIBWRAP
 	struct request_info req;
@@ -1033,9 +1032,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 
 	/* find out who just connected... */
 	addrlen = sizeof(addr);
-	rc = getpeername(new_sd, &addr, &addrlen);
-
-	if (rc < 0) {
+	if (getpeername(new_sd, &addr, &addrlen) < 0) {
 		/* log error to syslog facility */
 		syslog(
 			LOG_ERR,

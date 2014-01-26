@@ -1056,7 +1056,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 	new_conn_entry.port = nptr->sin_port;
 
 	/* log info to syslog facility */
-	if (debug==TRUE)
+	if (debug == TRUE)
 		syslog(
 			LOG_INFO,
 			"Connection from %s:%d",
@@ -1295,7 +1295,7 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	plugin_output[plugin_length-1] = '\0';
 
 	/* log info to syslog facility */
-	if (debug==TRUE) {
+	if (debug == TRUE) {
 		if (!strcmp(svc_description, ""))
 			syslog(
 				LOG_INFO,

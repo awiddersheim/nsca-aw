@@ -1298,19 +1298,24 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	if (debug==TRUE) {
 		if (!strcmp(svc_description, ""))
 			syslog(
-				LOG_NOTICE,
-				"HOST CHECK -> Host Name: '%s', Return Code: '%d', Output: '%s'",
+				LOG_INFO,
+				"HOST CHECK -> Host Name: '%s', Return Code: '%d', Output: '%s', Peer IP: '%s', Peer Port: '%d'",
 				host_name,
 				return_code,
 				plugin_output
+				conn_entry.ipaddr,
+				conn_entry.port
 			);
 		else
 			syslog(
-				LOG_NOTICE,"SERVICE CHECK -> Host Name: '%s', Service Description: '%s', Return Code: '%d', Output: '%s'",
+				LOG_INFO,
+				"SERVICE CHECK -> Host Name: '%s', Service Description: '%s', Return Code: '%d', Output: '%s', Peer IP: '%s', Peer Port: '%d'",
 				host_name,
 				svc_description,
 				return_code,
-				plugin_output
+				plugin_output,
+				conn_entry.ipaddr,
+				conn_entry.port
 			);
 	}
 

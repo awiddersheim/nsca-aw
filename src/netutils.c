@@ -215,6 +215,9 @@ int sendall(int s, char *buf, int *len, int timeout) {
 	req.tv_sec = 0;
 	req.tv_nsec = 300000000L; /* 300 ms */
 
+	/* get start time */
+	time(&start_time);
+
 	while(total < *len) {
 		/* check timeout */
 		time(&current_time);

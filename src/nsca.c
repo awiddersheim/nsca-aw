@@ -1779,18 +1779,14 @@ static int drop_privileges(const char *user, uid_t uid, gid_t gid) {
 
 /* perform the chroot() operation if configured to do so */
 void do_chroot(void) {
-	int retval = 0;
-
 	if (nsca_chroot != NULL) {
-		retval = chdir(nsca_chroot);
-		if (retval != 0) {
-			syslog(LOG_ERR, "Could chdir into chroot directory: %s", strerror(errno));
+		if (chdir(nsca_chroot) != 0) {
+			syslog(LOG_ERR, "Could not chdir into chroot directory: %s", strerror(errno));
 			do_exit(STATE_UNKNOWN);
 		}
 
-		retval = chroot(".");
-		if (retval != 0) {
-			syslog(LOG_ERR, "can not chroot: %s", strerror(errno));
+		if (chroot(".") != 0) {
+			syslog(LOG_ERR, "Could not chroot: %s", strerror(errno));
 			do_exit(STATE_UNKNOWN);
 		}
 	}

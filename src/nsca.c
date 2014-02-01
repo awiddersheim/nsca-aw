@@ -23,7 +23,7 @@
 #include "../include/nsca.h"
 
 static int server_port = DEFAULT_SERVER_PORT;
-static char server_address[16] = "0.0.0.0";
+static char server_address[IPv4_ADDRESS_SIZE] = "0.0.0.0";
 static int socket_timeout = DEFAULT_SOCKET_TIMEOUT;
 static int log_facility = LOG_DAEMON;
 

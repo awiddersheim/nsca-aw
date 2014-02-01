@@ -546,7 +546,6 @@ static int read_config_file(char *filename) {
 					LOG_ERR,
 					"check_result_path config variable found, but directory not writeable"
 				);
-				free(checkresult_test);
 				return(ERROR);
 			}
 		}

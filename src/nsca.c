@@ -1069,7 +1069,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 		inet_ntoa(nptr->sin_addr),
 		IPv4_ADDRESS_SIZE
 	);
-	new_conn_entry.port = nptr->sin_port;
+	new_conn_entry.port = ntohs(nptr->sin_port);
 
 	/* log info to syslog facility */
 	if (debug == TRUE)

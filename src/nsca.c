@@ -335,6 +335,8 @@ static int read_config_file(char *filename) {
 	char *varname;
 	char *varvalue;
 	int line;
+	int checkresult_test_fd = -1;
+	char *checkresult_test = NULL;
 
 	/* open the config file for reading */
 	fp = fopen(filename, "r");
@@ -520,18 +522,18 @@ static int read_config_file(char *filename) {
 			}
 
 			check_result_path = strdup(varvalue);
-			int checkresult_test_fd = -1;
-			char *checkresult_test = NULL;
 
 			asprintf(&checkresult_test,"%s/nsca.test.%i", check_result_path, getpid());
 			checkresult_test_fd = open(checkresult_test, O_WRONLY|O_CREAT);
-			if (checkresult_test_fd > 0)
+			if (checkresult_test_fd > 0) {
 				unlink(checkresult_test);
-			else {
+				free(checkresult_test);
+			} else {
 				syslog(
 					LOG_ERR,
 					"check_result_path config variable found, but directory not writeable"
 				);
+				free(checkresult_test);
 				return(ERROR);
 			}
 		}

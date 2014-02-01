@@ -523,7 +523,13 @@ static int read_config_file(char *filename) {
 
 			check_result_path = strdup(varvalue);
 
-			asprintf(&checkresult_test,"%s/nsca.test.%i", check_result_path, getpid());
+			if (asprintf(&checkresult_test,"%s/nsca.test.%i", check_result_path, getpid()) < 0) {
+				syslog(
+					LOG_ERR,
+					"Issue with asprintf() in read_config_file()"
+				);
+				return(ERROR);
+			}
 			checkresult_test_fd = open(checkresult_test, O_WRONLY|O_CREAT);
 			if (checkresult_test_fd > 0) {
 				unlink(checkresult_test);

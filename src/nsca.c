@@ -724,6 +724,8 @@ static void register_read_handler(
 			rhand[i].conn_entry = conn_entry;
 			rhand[i].handler = fp;
 			rhand[i].data = data;
+			rhand[i].keepalive = time(NULL);
+			rhand[i].alive = TRUE;
 			return;
 		}
 	}
@@ -741,6 +743,8 @@ static void register_read_handler(
 	rhand[nrhand].conn_entry = conn_entry;
 	rhand[nrhand].handler = fp;
 	rhand[nrhand].data = data;
+	rhand[nrhand].keepalive = time(NULL);
+	rhand[nrhand].alive = TRUE;
 	nrhand++;
 }
 
@@ -761,6 +765,8 @@ static void register_write_handler(
 			whand[i].conn_entry = conn_entry;
 			whand[i].handler = fp;
 			whand[i].data = data;
+			whand[i].keepalive = time(NULL);
+			whand[i].alive = TRUE;
 			return;
 		}
 	}
@@ -778,6 +784,8 @@ static void register_write_handler(
 	whand[nwhand].conn_entry = conn_entry;
 	whand[nwhand].handler = fp;
 	whand[nwhand].data = data;
+	whand[nwhand].keepalive = time(NULL);
+	whand[nwhand].alive = TRUE;
 	nwhand++;
 }
 
@@ -831,6 +839,7 @@ static void handle_events(void) {
 			data = rhand[hand].data;
 			rhand[hand].handler = NULL;
 			rhand[hand].data = NULL;
+			rhand[hand].alive = FALSE;
 			handler(rhand[hand].conn_entry, data);
 		}
 
@@ -841,7 +850,38 @@ static void handle_events(void) {
 			data = whand[hand].data;
 			whand[hand].handler = NULL;
 			whand[hand].data = NULL;
+			whand[hand].alive = FALSE;
 			handler(whand[hand].conn_entry, data);
+		}
+	}
+
+	for (i = 1; i < maxrhand; i++) {
+		if (rhand[i].alive == TRUE && (time(NULL) - rhand[i].keepalive) > socket_timeout) {
+			if (debug == TRUE)
+				syslog(
+					LOG_INFO,
+					"Connection from %s:%d timed out after %d seconds",
+					rhand[i].conn_entry.ipaddr,
+					rhand[i].conn_entry.port,
+					socket_timeout
+				);
+
+			close(rhand[i].conn_entry.sock);
+		}
+	}
+
+	for (i = 1; i < maxwhand; i++) {
+		if (whand[i].alive == TRUE && (time(NULL) - whand[i].keepalive) > socket_timeout) {
+			if (debug == TRUE)
+				syslog(
+					LOG_INFO,
+					"Connection from %s:%d timed out after %d seconds",
+					whand[i].conn_entry.ipaddr,
+					whand[i].conn_entry.port,
+					socket_timeout
+				);
+
+			close(whand[i].conn_entry.sock);
 		}
 	}
 
@@ -938,14 +978,14 @@ static void wait_for_connections(void) {
 	if (mode == MULTI_PROCESS_DAEMON)
 		fcntl(sock, F_SETFL, O_NONBLOCK);
 
-        /* create conn_entry */
-        conn_entry.sock = sock;
+	/* create conn_entry */
+	conn_entry.sock = sock;
 	strncpy(
 		conn_entry.ipaddr,
 		server_address,
 		IPv4_ADDRESS_SIZE
 	);
-        conn_entry.port = server_port;
+	conn_entry.port = server_port;
 
 	/* listen for connection requests */
 	if (mode == SINGLE_PROCESS_DAEMON)

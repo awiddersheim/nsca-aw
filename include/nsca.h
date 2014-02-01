@@ -32,6 +32,8 @@ struct handler_entry {
 	void (*handler)(struct conn_entry, void *);
 	void *data;
 	struct conn_entry conn_entry;
+	time_t keepalive;
+	int alive;
 };
 
 static void handle_events(void);

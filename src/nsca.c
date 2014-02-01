@@ -532,7 +532,14 @@ static int read_config_file(char *filename) {
 			}
 			checkresult_test_fd = open(checkresult_test, O_WRONLY|O_CREAT);
 			if (checkresult_test_fd > 0) {
-				unlink(checkresult_test);
+				if (unlink(checkresult_test) < 0) {
+					syslog(
+						LOG_ERR,
+						"Could not unlink '%s'",
+						checkresult_test
+					);
+					return(ERROR);
+				}
 				free(checkresult_test);
 			} else {
 				syslog(

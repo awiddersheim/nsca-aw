@@ -1422,6 +1422,9 @@ static int write_checkresult_file(
 			checkresult_file
 		);
 
+		/* clear temp buffer */
+		free(checkresult_file);
+
 		return(
 			write_check_result(
 				host_name,
@@ -1482,6 +1485,10 @@ static int write_checkresult_file(
 
 	/* reset umask */
 	umask(old_umask);
+
+	/* clear temp buffers */
+	free(checkresult_file);
+	free(checkresult_ok_file);
 
 	return(OK);
 }

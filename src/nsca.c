@@ -1366,8 +1366,8 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 			svc_description,
 			return_code,
 			plugin_output,
-			time(NULL
-		));
+			time(NULL)
+		);
 
 	return;
 }

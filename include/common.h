@@ -94,7 +94,7 @@
 
 /******************** MISC DEFINITIONS *****************/
 #define TRANSMITTED_IV_SIZE	128	/* size of IV to transmit - must be as big as largest IV needed for any crypto algorithm */
-
+#define IPv4_ADDRESS_SIZE	 16	/* size of an ipv4 address */
 
 /*************** PACKET STRUCTURE DEFINITIONS **********/
 #define NSCA_PACKET_VERSION_3	3	/* packet version identifier */

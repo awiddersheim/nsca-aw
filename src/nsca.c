@@ -172,7 +172,11 @@ int main(int argc, char **argv) {
 
 		/* create conn_entry struct */
 		conn_entry.sock = 0;
-		conn_entry.ipaddr = "127.0.0.1";
+		strncpy(
+			conn_entry.ipaddr,
+			"127.0.0.1",
+			IPv4_ADDRESS_SIZE
+		);
 		conn_entry.port = 0;
 
 		/* if we're running under inetd, handle one connection and get out */
@@ -921,8 +925,12 @@ static void wait_for_connections(void) {
 
         /* create conn_entry */
         conn_entry.sock = sock;
-        conn_entry.ipaddr = NULL;
-        conn_entry.port = 0;
+	strncpy(
+		conn_entry.ipaddr,
+		server_address,
+		IPv4_ADDRESS_SIZE
+	);
+        conn_entry.port = server_port;
 
 	/* listen for connection requests */
 	if (mode == SINGLE_PROCESS_DAEMON)
@@ -1055,7 +1063,11 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 
 	/* create conn_entry */
 	new_conn_entry.sock = new_sd;
-	new_conn_entry.ipaddr = inet_ntoa(nptr->sin_addr);
+	strncpy(
+		new_conn_entry.ipaddr,
+		inet_ntoa(nptr->sin_addr),
+		IPv4_ADDRESS_SIZE
+	);
 	new_conn_entry.port = nptr->sin_port;
 
 	/* log info to syslog facility */

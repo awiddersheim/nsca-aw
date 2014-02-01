@@ -395,7 +395,7 @@ static int read_config_file(char *filename) {
 		}
 
 		else if (!strcmp(varname, "server_address")) {
-			strncpy(server_address, varvalue, sizeof(server_address) - 1);
+			strncpy(server_address, varvalue, sizeof(server_address)-1);
 			server_address[sizeof(server_address)-1] = '\0';
 		}
 

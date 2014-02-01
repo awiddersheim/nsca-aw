@@ -1487,12 +1487,13 @@ static int write_checkresult_file(
 		);
 		return(ERROR);
 	}
+
+	checkresult_ok_file_fp = fopen(checkresult_ok_file, "w");
 	syslog(
 		LOG_DEBUG,
 		"checkresult completion file '%s' open",
 		checkresult_ok_file
 	);
-	checkresult_ok_file_fp = fopen(checkresult_ok_file, "w");
 	fclose(checkresult_ok_file_fp);
 
 	/* reset umask */

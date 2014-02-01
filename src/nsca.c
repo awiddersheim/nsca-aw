@@ -262,7 +262,7 @@ int main(int argc, char **argv) {
 			/* remove pid file */
 			remove_pid_file();
 
-			syslog(LOG_NOTICE, "Daemon shutdown\n");
+			syslog(LOG_NOTICE, "Daemon shutdown");
 		}
 		break;
 	default:
@@ -341,7 +341,7 @@ static int read_config_file(char *filename) {
 
 	/* exit if we couldn't open the config file */
 	if (fp == NULL) {
-		syslog(LOG_ERR, "Could not open config file '%s' for reading\n", filename);
+		syslog(LOG_ERR, "Could not open config file '%s' for reading", filename);
 		return(ERROR);
 	}
 
@@ -362,7 +362,7 @@ static int read_config_file(char *filename) {
 		if (varname == NULL) {
 			syslog(
 				LOG_ERR,
-				"No variable name specified in config file '%s' - Line %d\n",
+				"No variable name specified in config file '%s' - Line %d",
 				filename,
 				line
 			);
@@ -374,7 +374,7 @@ static int read_config_file(char *filename) {
 		if (varvalue == NULL) {
 			syslog(
 				LOG_ERR,
-				"No variable value specified in config file '%s' - Line %d\n",
+				"No variable value specified in config file '%s' - Line %d",
 				filename,
 				line
 			);
@@ -386,7 +386,7 @@ static int read_config_file(char *filename) {
 			if ((server_port < 1024 && (geteuid() != 0)) || server_port < 0) {
 				syslog(
 					LOG_ERR,
-					"Invalid port number specified in config file '%s' - Line %d\n",
+					"Invalid port number specified in config file '%s' - Line %d",
 					filename,
 					line
 				);
@@ -403,7 +403,7 @@ static int read_config_file(char *filename) {
 			if (strlen(varvalue) > sizeof(command_file)-1) {
 				syslog(
 					LOG_ERR,
-					"Command file name is too long in config file '%s' - Line %d\n",
+					"Command file name is too long in config file '%s' - Line %d",
 					filename,
 					line
 				);
@@ -418,7 +418,7 @@ static int read_config_file(char *filename) {
 			if (strlen(varvalue) > sizeof(alternate_dump_file)-1) {
 				syslog(
 					LOG_ERR,
-					"Alternate dump file name is too long in config file '%s' - Line %d\n",
+					"Alternate dump file name is too long in config file '%s' - Line %d",
 					filename,
 					line
 				);
@@ -433,7 +433,7 @@ static int read_config_file(char *filename) {
 			if (strlen(varvalue) > sizeof(password)-1) {
 				syslog(
 					LOG_ERR,
-					"Password is too long in config file '%s' - Line %d\n",
+					"Password is too long in config file '%s' - Line %d",
 					filename,
 					line
 				);
@@ -478,7 +478,7 @@ static int read_config_file(char *filename) {
 			default:
 				syslog(
 					LOG_ERR,
-					"Invalid decryption method (%d) in config file '%s' - Line %d\n",
+					"Invalid decryption method (%d) in config file '%s' - Line %d",
 					decryption_method,
 					filename,
 					line
@@ -487,7 +487,7 @@ static int read_config_file(char *filename) {
 				if (decryption_method >= 2)
 					syslog(
 						LOG_ERR,
-						"Daemon was not compiled with mcrypt library, so decryption is unavailable.\n"
+						"Daemon was not compiled with mcrypt library, so decryption is unavailable"
 					);
 #endif
 				return(ERROR);
@@ -512,7 +512,7 @@ static int read_config_file(char *filename) {
 			if (strlen(varvalue) > MAX_INPUT_BUFFER-1) {
 				syslog(
 					LOG_ERR,
-					"Check result path is too long in config file '%s' - Line %d\n",
+					"Check result path is too long in config file '%s' - Line %d",
 					filename,
 					line
 				);
@@ -530,7 +530,7 @@ static int read_config_file(char *filename) {
 			else {
 				syslog(
 					LOG_ERR,
-					"check_result_path config variable found, but directory not writeable.\n"
+					"check_result_path config variable found, but directory not writeable"
 				);
 				return(ERROR);
 			}
@@ -548,7 +548,7 @@ static int read_config_file(char *filename) {
 			if (max_packet_age > 900) {
 				syslog(
 					LOG_ERR,
-					"Max packet age cannot be greater than 15 minutes (900 seconds)\n"
+					"Max packet age cannot be greater than 15 minutes (900 seconds)"
 				);
 				return(ERROR);
 			}
@@ -575,7 +575,7 @@ static int read_config_file(char *filename) {
 			else
 				syslog(
 					LOG_WARNING,
-					"Invalid log_facility specified in config file '%s' - Line %d\n",
+					"Invalid log_facility specified in config file '%s' - Line %d",
 					filename,
 					line
 				);
@@ -584,7 +584,7 @@ static int read_config_file(char *filename) {
 		else {
 			syslog(
 				LOG_ERR,
-				"Unknown option specified in config file '%s' - Line %d\n",
+				"Unknown option specified in config file '%s' - Line %d",
 				filename,
 				line
 			);
@@ -868,7 +868,7 @@ static void wait_for_connections(void) {
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&flag, sizeof(flag)) < 0) {
 		syslog(
 			LOG_ERR,
-			"Could not set reuse address option on socket!\n"
+			"Could not set reuse address option on socket!"
 		);
 		do_exit(STATE_CRITICAL);
 	}
@@ -883,7 +883,7 @@ static void wait_for_connections(void) {
 	else if (!my_inet_aton(server_address, &myname.sin_addr)) {
 		syslog(
 			LOG_ERR,
-			"Server address is not a valid IP address\n"
+			"Server address is not a valid IP address"
 		);
 		do_exit(STATE_CRITICAL);
 	}
@@ -893,7 +893,7 @@ static void wait_for_connections(void) {
 	if (bind(sock, (struct sockaddr *)&myname, sizeof(myname)) < 0) {
 		syslog(
 			LOG_ERR,
-			"Network server bind failure (%d: %s)\n",
+			"Network server bind failure (%d: %s)",
 			errno,
 			strerror(errno)
 		);
@@ -904,7 +904,7 @@ static void wait_for_connections(void) {
 	if (listen(sock, SOMAXCONN) < 0) {
 		syslog(
 			LOG_ERR,
-			"Network server listen failure (%d: %s)\n",
+			"Network server listen failure (%d: %s)",
 			errno,
 			strerror(errno)
 		);
@@ -916,7 +916,7 @@ static void wait_for_connections(void) {
 
 	if (debug == TRUE)
 		syslog(LOG_DEBUG,
-			"Listening for connections on port %d\n",
+			"Listening for connections on port %d",
 			htons(myname.sin_port)
 		);
 
@@ -1154,7 +1154,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 
 	/* there was an error sending the packet */
 	if (rc == -1) {
-		syslog(LOG_ERR, "Could not send init packet to client\n");
+		syslog(LOG_ERR, "Could not send init packet to client");
 		encrypt_cleanup(decryption_method, CI);
 		close(conn_entry.sock);
 		if (mode == MULTI_PROCESS_DAEMON)
@@ -1166,7 +1166,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 	else if (bytes_to_send < sizeof(send_packet)) {
 		syslog(
 			LOG_ERR,
-			"Only able to send %d of %d bytes of init packet to client\n",
+			"Only able to send %d of %d bytes of init packet to client",
 			rc,
 			sizeof(send_packet)
 		);
@@ -1893,7 +1893,7 @@ void sighandler(int sig) {
 	if (sig == SIGHUP) {
 		sigrestart = TRUE;
 
-		syslog(LOG_NOTICE, "Caught SIGHUP - restarting...\n");
+		syslog(LOG_NOTICE, "Caught SIGHUP - restarting...");
 	}
 
 	/* else begin shutting down... */
@@ -1904,7 +1904,7 @@ void sighandler(int sig) {
 
 		sigshutdown = TRUE;
 
-		syslog(LOG_NOTICE, "Caught SIG%s - shutting down...\n", sigs[sig]);
+		syslog(LOG_NOTICE, "Caught SIG%s - shutting down...", sigs[sig]);
 	}
 
 	return;

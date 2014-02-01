@@ -1411,7 +1411,13 @@ static int write_checkresult_file(
 	old_umask = umask(new_umask);
 
 	/* create safe checkresult file */
-	asprintf(&checkresult_file, "%s/cXXXXXX", check_result_path);
+	if (asprintf(&checkresult_file, "%s/cXXXXXX", check_result_path) < 0) {
+		syslog(
+			LOG_ERR,
+			"Issue running asprintf() in write_checkresult_file()"
+		);
+		return(ERROR);
+	}
 	checkresult_file_fd = mkstemp(checkresult_file);
 	if (checkresult_file_fd > 0)
 		checkresult_file_fp = fdopen(checkresult_file_fd, "w");
@@ -1474,7 +1480,13 @@ static int write_checkresult_file(
 	fclose(checkresult_file_fp);
 
 	/* create and close ok file */
-	asprintf(&checkresult_ok_file, "%s.ok", checkresult_file);
+	if (asprintf(&checkresult_ok_file, "%s.ok", checkresult_file) < 0) {
+		syslog(
+			LOG_ERR,
+			"Issue running asprintf() in write_checkresult_file()"
+		);
+		return(ERROR);
+	}
 	syslog(
 		LOG_DEBUG,
 		"checkresult completion file '%s' open",

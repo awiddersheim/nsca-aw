@@ -1152,7 +1152,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 			rc,
 			sizeof(send_packet)
 		);
-		encrypt_cleanup(decryption_method,CI);
+		encrypt_cleanup(decryption_method, CI);
 		close(conn_entry.sock);
 		if (mode == MULTI_PROCESS_DAEMON)
 			do_exit(STATE_CRITICAL);
@@ -1162,6 +1162,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 	/* open the command file if we're aggregating writes */
 	if (aggregate_writes==TRUE) {
 		if (open_command_file() == ERROR) {
+			encrypt_cleanup(decryption_method, CI);
 			close(conn_entry.sock);
 			if (mode == MULTI_PROCESS_DAEMON)
 				do_exit(STATE_CRITICAL);

@@ -1021,7 +1021,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 
 	if (!hosts_access(&req)) {
 		/* refuse the connection */
-		syslog(LOG_ERR, "refused connect from %s", eval_client(&req));
+		syslog(LOG_ERR, "Refused connection from %s", eval_client(&req));
 		close(new_sd);
 		return;
 	}

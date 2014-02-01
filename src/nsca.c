@@ -1015,7 +1015,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 
 #ifdef HAVE_LIBWRAP
 
-	/* Check whether or not connections are allowed from this host */
+	/* check whether or not connections are allowed from this host */
 	request_init(&req, RQ_DAEMON, "nsca", RQ_FILE, new_sd, 0);
 	fromhost(&req);
 

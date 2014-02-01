@@ -960,13 +960,13 @@ static void wait_for_connections(void) {
 static void accept_connection(struct conn_entry conn_entry, void *unused){
 	int new_sd;
 	pid_t pid;
-	struct sockaddr addr;
-	struct sockaddr_in *nptr;
-	socklen_t addrlen;
+	struct sockaddr_in addr;
+	int addrlen;
 	struct conn_entry new_conn_entry;
 #ifdef HAVE_LIBWRAP
 	struct request_info req;
 #endif
+	addrlen = sizeof(addr);
 
 	/* DO NOT REMOVE! 01/29/2007 single process daemon will fail if this is removed */
 	if (mode == SINGLE_PROCESS_DAEMON)
@@ -975,7 +975,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 	/* wait for a connection request */
 	while(1) {
 		/* we got a live one... */
-		if ((new_sd=accept(conn_entry.sock,0,0)) >= 0)
+		if ((new_sd = accept(conn_entry.sock, (struct sockaddr *)&addr, &addrlen)) >= 0)
 			break;
 
 		/* handle the error */
@@ -1002,7 +1002,9 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 		/* log error to syslog facility */
 		syslog(
 			LOG_ERR,
-			"Network server accept failure (%d: %s)",
+			"Network server accept failure from %s:%d (%d: %s)",
+			inet_ntoa(addr.sin_addr),
+			ntohs(addr.sin_port),
 			errno,
 			strerror(errno)
 		);
@@ -1042,34 +1044,14 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 			close(conn_entry.sock);
 	}
 
-	/* find out who just connected... */
-	addrlen = sizeof(addr);
-	if (getpeername(new_sd, &addr, &addrlen) < 0) {
-		/* log error to syslog facility */
-		syslog(
-			LOG_ERR,
-			"Network server getpeername() failure (%d: %s)",
-			errno,
-			strerror(errno)
-		);
-
-		/* close socket prior to exiting */
-		close(new_sd);
-		if (mode == MULTI_PROCESS_DAEMON)
-			do_exit(STATE_CRITICAL);
-		return;
-	}
-
-	nptr = (struct sockaddr_in *)&addr;
-
 	/* create conn_entry */
 	new_conn_entry.sock = new_sd;
 	strncpy(
 		new_conn_entry.ipaddr,
-		inet_ntoa(nptr->sin_addr),
+		inet_ntoa(addr.sin_addr),
 		IPv4_ADDRESS_SIZE
 	);
-	new_conn_entry.port = ntohs(nptr->sin_port);
+	new_conn_entry.port = ntohs(addr.sin_port);
 
 	/* log info to syslog facility */
 	if (debug == TRUE)

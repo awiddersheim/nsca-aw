@@ -268,6 +268,7 @@ int main(int argc, char **argv) {
 	default:
 		break;
 	}
+
 	/* we are now running in daemon mode, or the connection handed over by inetd has been completed, so the parent process exits */
 	do_exit(STATE_OK);
 

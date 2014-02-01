@@ -1419,13 +1419,26 @@ static int write_checkresult_file(
 		return(ERROR);
 	}
 	checkresult_file_fd = mkstemp(checkresult_file);
-	if (checkresult_file_fd > 0)
+	if (checkresult_file_fd > 0) {
 		checkresult_file_fp = fdopen(checkresult_file_fd, "w");
-	else {
+		if (checkresult_file_fp == NULL) {
+			syslog(
+				LOG_ERR,
+				"Unable to open file '%s' (%d: %s)",
+				checkresult_file,
+				errno,
+				strerror(errno)
+			);
+			free(checkresult_file);
+			return(ERROR);
+		}
+	} else {
 		syslog(
 			LOG_ERR,
-			"Unable to open and write checkresult file '%s', failing back to PIPE",
-			checkresult_file
+			"Unable to open and write checkresult file '%s' (%d: %s), failing back to PIPE",
+			checkresult_file,
+			errno,
+			strerror(errno)
 		);
 
 		/* clear temp buffer */
@@ -1489,6 +1502,17 @@ static int write_checkresult_file(
 	}
 
 	checkresult_ok_file_fp = fopen(checkresult_ok_file, "w");
+	if (checkresult_ok_file_fp == NULL) {
+		syslog(
+			LOG_ERR,
+			"Unable to open file '%s' (%d: %s)",
+			checkresult_ok_file,
+			errno,
+			strerror(errno)
+		);
+		free(checkresult_ok_file_fp);
+		return(ERROR);
+	}
 	syslog(
 		LOG_DEBUG,
 		"checkresult completion file '%s' open",

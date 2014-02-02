@@ -1286,7 +1286,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 		}
 	}
 
-	if (mode == SINGLE_PROCESS_DAEMON)
+	if (mode == SINGLE_PROCESS_DAEMON) {
 		if (register_read_handler(conn_entry, handle_connection_read, (void *)CI) == ERROR) {
 			syslog(
 				LOG_ERR,
@@ -1298,7 +1298,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 			close(conn_entry.sock);
 			return;
 		}
-	else {
+	} else {
 		while(1)
 			handle_connection_read(conn_entry, (void *)CI);
 	}

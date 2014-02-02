@@ -325,6 +325,13 @@ static void free_memory(void) {
 static void do_exit(int return_code) {
 	do_cleanup();
 
+	if (debug == TRUE)
+		syslog(
+			LOG_INFO,
+			"Exiting with return code: %u",
+			return_code
+		);
+
 	exit(return_code);
 }
 
@@ -681,12 +688,12 @@ static void install_child_handler(void) {
 }
 
 /* register a file descriptor to be polled for an event set */
-static int register_poll(short events, int fd) {
+static int register_poll(short events, struct conn_entry conn_entry) {
 	int i;
 
 	/* if it's already in the list, just flag the events */
 	for (i = 0; i < npfds; i++) {
-		if (pfds[i].fd == fd) {
+		if (pfds[i].fd == conn_entry.sock) {
 			pfds[i].events|=events;
 			return(OK);
 		}
@@ -699,7 +706,9 @@ static int register_poll(short events, int fd) {
 		if (pfds == NULL) {
 			syslog(
 				LOG_ERR,
-				"Failure calling malloc() in register_poll()"
+				"Failure calling malloc() in register_poll() for %s:%d",
+				conn_entry.ipaddr,
+				conn_entry.port
 			);
 			return(ERROR);
 		}
@@ -710,13 +719,15 @@ static int register_poll(short events, int fd) {
 		if (pfds == NULL) {
 			syslog(
 				LOG_ERR,
-				"Failure calling realloc() in register_poll()"
+				"Failure calling realloc() in register_poll() for %s:%d",
+				conn_entry.ipaddr,
+				conn_entry.port
 			);
 			return(ERROR);
 		}
 	}
 
-	pfds[npfds].fd = fd;
+	pfds[npfds].fd = conn_entry.sock;
 	pfds[npfds].events = events;
 	npfds++;
 	return(OK);
@@ -730,11 +741,11 @@ static int register_read_handler(
 ) {
 	int i;
 
-	/* register our interest in this descriptor */
-	if (register_poll(POLLIN, conn_entry.sock) == ERROR)
+	/* register interest in this descriptor */
+	if (register_poll(POLLIN, conn_entry) == ERROR)
 		return(ERROR);
 
-	/* if it's already in the list, just update the handler */
+	/* if it is already in the list, just update the handler */
 	for (i = 0; i < nrhand; i++) {
 		if (rhand[i].conn_entry.sock == conn_entry.sock) {
 			rhand[i].conn_entry = conn_entry;
@@ -753,7 +764,9 @@ static int register_read_handler(
 		if (rhand == NULL) {
 			syslog(
 				LOG_ERR,
-				"Failure calling malloc() in register_read_handler()"
+				"Failure calling malloc() in register_read_handler() for %s:%d",
+				conn_entry.ipaddr,
+				conn_entry.port
 			);
 			return(ERROR);
 		}
@@ -764,7 +777,9 @@ static int register_read_handler(
 		if (rhand == NULL) {
 			syslog(
 				LOG_ERR,
-				"Failure calling realloc() in register_read_handler()"
+				"Failure calling realloc() in register_read_handler() for %s:%d",
+				conn_entry.ipaddr,
+				conn_entry.port
 			);
 			return(ERROR);
 		}
@@ -787,11 +802,11 @@ static int register_write_handler(
 ) {
 	int i;
 
-	/* register our interest in this descriptor */
-	if (register_poll(POLLOUT, conn_entry.sock) == ERROR)
+	/* register interest in this descriptor */
+	if (register_poll(POLLOUT, conn_entry) == ERROR)
 		return(ERROR);
 
-	/* if it's already in the list, just update the handler */
+	/* if it is already in the list, just update the handler */
 	for (i = 0; i < nwhand; i++) {
 		if (whand[i].conn_entry.sock == conn_entry.sock) {
 			whand[i].conn_entry = conn_entry;
@@ -810,7 +825,9 @@ static int register_write_handler(
 		if (whand == NULL) {
 			syslog(
 				LOG_ERR,
-				"Failure calling malloc() in register_write_handler()"
+				"Failure calling malloc() in register_write_handler() for %s:%d",
+				conn_entry.ipaddr,
+				conn_entry.port
 			);
 			return(ERROR);
 		}
@@ -821,7 +838,9 @@ static int register_write_handler(
 		if (whand == NULL) {
 			syslog(
 				LOG_ERR,
-				"Failure calling realloc() in register_write_handler()"
+				"Failure calling realloc() in register_write_handler() for %s:%d",
+				conn_entry.ipaddr,
+				conn_entry.port
 			);
 			return(ERROR);
 		}
@@ -845,8 +864,12 @@ static int find_rhand(int fd) {
 			return(i);
 	}
 
-	/* we couldn't find the read handler */
-	syslog(LOG_ERR, "Handler stack corrupt - aborting");
+	/* could not find the read handler */
+	syslog(
+		LOG_ERR,
+		"Could not find rhand (%d), handler stack corrupt - aborting",
+		fd
+	);
 	do_exit(STATE_CRITICAL);
 }
 
@@ -859,8 +882,12 @@ static int find_whand(int fd) {
 			return(i);
 	}
 
-	/* we couldn't find the write handler */
-	syslog(LOG_ERR, "Handler stack corrupt - aborting");
+	/* could not find the write handler */
+	syslog(
+		LOG_ERR,
+		"Could not find whand (%d), handler stack corrupt - aborting",
+		fd
+	);
 	do_exit(STATE_CRITICAL);
 }
 
@@ -902,6 +929,7 @@ static void handle_events(void) {
 		}
 	}
 
+	/* loop through each rhand looking for connections that have timed out */
 	for (i = 1; i < maxrhand; i++) {
 		if (rhand[i].alive == TRUE && (time(NULL) - rhand[i].keepalive) > socket_timeout) {
 			if (debug == TRUE)
@@ -917,6 +945,7 @@ static void handle_events(void) {
 		}
 	}
 
+	/* loop through each whand looking for connections that have timed out */
 	for (i = 1; i < maxwhand; i++) {
 		if (whand[i].alive == TRUE && (time(NULL) - whand[i].keepalive) > socket_timeout) {
 			if (debug == TRUE)
@@ -969,7 +998,7 @@ static void wait_for_connections(void) {
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&flag, sizeof(flag)) < 0) {
 		syslog(
 			LOG_ERR,
-			"Could not set reuse address option on socket!"
+			"Could not set reuse address option on socket"
 		);
 		do_exit(STATE_CRITICAL);
 	}
@@ -984,7 +1013,8 @@ static void wait_for_connections(void) {
 	else if (!my_inet_aton(server_address, &myname.sin_addr)) {
 		syslog(
 			LOG_ERR,
-			"Server address is not a valid IP address"
+			"Server address (%s) is not a valid IP address",
+			server_address
 		);
 		do_exit(STATE_CRITICAL);
 	}
@@ -1082,7 +1112,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 		if (register_read_handler(conn_entry, accept_connection, NULL) == ERROR) {
 			syslog(
 				LOG_ERR,
-				"Unable to setup listener socket again"
+				"Unable to setup listener socket in accept_connection()"
 			);
 			close(conn_entry.sock);
 			do_exit(STATE_CRITICAL);
@@ -1200,7 +1230,12 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 
 	/* log info to syslog facility */
 	if (debug == TRUE)
-		syslog(LOG_INFO, "Handling the connection...");
+		syslog(
+			LOG_INFO,
+			"Handling connection from %s:%d",
+			conn_entry.ipaddr,
+			conn_entry.port
+		);
 
 	/* socket should be non-blocking */
 	if ((flags = fcntl(conn_entry.sock, F_GETFL, 0)) < 0) {
@@ -1252,7 +1287,12 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 
 	/* there was an error sending the packet */
 	if (rc == -1) {
-		syslog(LOG_ERR, "Could not send init packet to client");
+		syslog(
+			LOG_ERR,
+			"Could not send init packet to %s:%d",
+			conn_entry.ipaddr,
+			conn_entry.port
+		);
 		encrypt_cleanup(decryption_method, CI);
 		close(conn_entry.sock);
 		if (mode == MULTI_PROCESS_DAEMON)
@@ -1264,9 +1304,11 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 	else if (bytes_to_send < sizeof(send_packet)) {
 		syslog(
 			LOG_ERR,
-			"Only able to send %d of %d bytes of init packet to client",
+			"Only able to send %d of %d bytes of init packet to %s:%d",
 			rc,
-			sizeof(send_packet)
+			sizeof(send_packet),
+			conn_entry.ipaddr,
+			conn_entry.port
 		);
 		encrypt_cleanup(decryption_method, CI);
 		close(conn_entry.sock);
@@ -1338,7 +1380,12 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 			plugin_length = OLD_PLUGINOUTPUT_LENGTH;
 		} else {
 			if (debug == TRUE)
-				syslog(LOG_ERR, "End of connection...");
+				syslog(
+					LOG_ERR,
+					"End of connection from %s:%d",
+					conn_entry.ipaddr,
+					conn_entry.port
+				);
 			encrypt_cleanup(decryption_method, CI);
 			close(conn_entry.sock);
 			if (mode == SINGLE_PROCESS_DAEMON)
@@ -1352,7 +1399,9 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	if (bytes_to_recv != packet_length) {
 		syslog(
 			LOG_ERR,
-			"Data sent from client was too short (%d < %d), aborting...",
+			"Data sent from %s:%d was too short (%d < %d), aborting",
+			conn_entry.ipaddr,
+			conn_entry.port,
 			bytes_to_recv,
 			packet_length
 		);
@@ -1385,7 +1434,9 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	if (ntohs(receive_packet.packet_version) != NSCA_PACKET_VERSION_3) {
 		syslog(
 			LOG_ERR,
-			"Received invalid packet type/version from client - possibly due to client using wrong password or crypto algorithm?"
+			"Received invalid packet type/version from %s:%d - possibly due to client using wrong password or crypto algorithm",
+			conn_entry.ipaddr,
+			conn_entry.port
 		);
 
 		/*return;*/
@@ -1403,7 +1454,9 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	if (packet_crc32 != calculated_crc32) {
 		syslog(
 			LOG_ERR,
-			"Dropping packet with invalid CRC32 - possibly due to client using wrong password or crypto algorithm?"
+			"Dropping packet with invalid CRC32 from %s:%d - possibly due to client using wrong password or crypto algorithm",
+			conn_entry.ipaddr,
+			conn_entry.port
 		);
 
 		/*return;*/
@@ -1422,9 +1475,11 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	if (debug == TRUE)
 		syslog(
 			LOG_ERR,
-			"Time difference in packet: %lu seconds for host %s",
+			"Time difference in packet: %lu seconds for host %s from %s:%d",
 			packet_age,
-			host_name
+			host_name,
+			conn_entry.ipaddr,
+			conn_entry.port
 		);
 
 	if ((max_packet_age > 0 && (packet_age > max_packet_age) && (packet_age >= 0)) ||
@@ -1432,7 +1487,9 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	) {
 		syslog(
 			LOG_ERR,
-			"Dropping packet with stale timestamp for %s - packet was %lu seconds old.",
+			"Dropping packet with stale timestamp from %s:%d for %s - packet was %lu seconds old",
+			conn_entry.ipaddr,
+			conn_entry.port,
 			host_name,
 			packet_age
 		);

@@ -1036,7 +1036,14 @@ static void wait_for_connections(void) {
 
 	/* listen for connection requests */
 	if (mode == SINGLE_PROCESS_DAEMON)
-		register_read_handler(conn_entry, accept_connection, NULL);
+		if (register_read_handler(conn_entry, accept_connection, NULL) == ERROR) {
+			syslog(
+				LOG_ERR,
+				"Could not completely setup listener"
+			);
+			close(sock);
+			do_exit(STATE_CRITICAL);
+		}
 
 	while(1) {
 		/* bail out if necessary */
@@ -1071,7 +1078,14 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 
 	/* DO NOT REMOVE! 01/29/2007 single process daemon will fail if this is removed */
 	if (mode == SINGLE_PROCESS_DAEMON)
-		register_read_handler(conn_entry, accept_connection, NULL);
+		if (register_read_handler(conn_entry, accept_connection, NULL) == ERROR) {
+			syslog(
+				LOG_ERR,
+				"Unable to setup listener socket again"
+			);
+			close(conn_entry.sock);
+			do_exit(STATE_CRITICAL);
+		}
 
 	/* wait for a connection request */
 	while(1) {
@@ -1272,7 +1286,17 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 	}
 
 	if (mode == SINGLE_PROCESS_DAEMON)
-		register_read_handler(conn_entry, handle_connection_read, (void *)CI);
+		if (register_read_handler(conn_entry, handle_connection_read, (void *)CI) == ERROR) {
+			syslog(
+				LOG_ERR,
+				"Could not setup read handler for %s:%d",
+				conn_entry.ipaddr,
+				conn_entry.sock
+			);
+			encrypt_cleanup(decryption_method, CI);
+			close(conn_entry.sock);
+			return;
+		}
 	else {
 		while(1)
 			handle_connection_read(conn_entry, (void *)CI);
@@ -1341,7 +1365,17 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 
 	/* if we're single-process, we need to set things up so we handle the next packet after this one... */
 	if (mode == SINGLE_PROCESS_DAEMON)
-		register_read_handler(conn_entry, handle_connection_read, (void *)CI);
+		if (register_read_handler(conn_entry, handle_connection_read, (void *)CI) == ERROR) {
+			syslog(
+				LOG_ERR,
+				"Could not setup read handler for %s:%d",
+				conn_entry.ipaddr,
+				conn_entry.sock
+			);
+			encrypt_cleanup(decryption_method, CI);
+			close(conn_entry.sock);
+			return;
+		}
 
 	/* decrypt the packet */
 	decrypt_buffer((char *)&receive_packet, packet_length, password, decryption_method, CI);

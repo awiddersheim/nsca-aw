@@ -731,7 +731,7 @@ static int register_read_handler(
 	int i;
 
 	/* register our interest in this descriptor */
-	if (register_poll(POLLOUT, conn_entry.sock) == ERROR)
+	if (register_poll(POLLIN, conn_entry.sock) == ERROR)
 		return(ERROR);
 
 	/* if it's already in the list, just update the handler */

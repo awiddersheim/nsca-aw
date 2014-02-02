@@ -262,7 +262,7 @@ int main(int argc, char **argv) {
 			/* remove pid file */
 			remove_pid_file();
 
-			syslog(LOG_NOTICE, "Daemon shutdown");
+			syslog(LOG_INFO, "Daemon shutdown");
 		}
 		break;
 	default:
@@ -1013,11 +1013,11 @@ static void wait_for_connections(void) {
 	}
 
 	/* log info to syslog facility */
-	syslog(LOG_NOTICE, "Starting up daemon");
+	syslog(LOG_INFO, "Starting up daemon");
 
 	if (debug == TRUE)
 		syslog(
-			LOG_DEBUG,
+			LOG_INFO,
 			"Listening for connections on port %d",
 			htons(myname.sin_port)
 		);
@@ -1517,7 +1517,7 @@ static int write_checkresult_file(
 	time_t check_time
 ) {
 	if (debug == TRUE)
-		syslog(LOG_ERR, "Attempting to write checkresult file");
+		syslog(LOG_INFO, "Attempting to write checkresult file");
 
 	mode_t new_umask = 077;
 	mode_t old_umask;
@@ -1579,7 +1579,7 @@ static int write_checkresult_file(
 
 	if (debug == TRUE)
 		syslog(
-			LOG_ERR,
+			LOG_INFO,
 			"checkresult file '%s' open for write",
 			checkresult_file
 		);
@@ -1635,11 +1635,12 @@ static int write_checkresult_file(
 		free(checkresult_ok_file_fp);
 		return(ERROR);
 	}
-	syslog(
-		LOG_DEBUG,
-		"checkresult completion file '%s' open",
-		checkresult_ok_file
-	);
+	if (debug == TRUE)
+		syslog(
+			LOG_INFO,
+			"checkresult completion file '%s' open",
+			checkresult_ok_file
+		);
 	fclose(checkresult_ok_file_fp);
 
 	/* reset umask */
@@ -1661,7 +1662,7 @@ static int write_check_result(
 	time_t check_time
 ) {
 	if (debug == TRUE)
-		syslog(LOG_ERR, "Attempting to write to nagios command pipe");
+		syslog(LOG_INFO, "Attempting to write to nagios command pipe");
 
 	if (aggregate_writes == FALSE) {
 		if (open_command_file() == ERROR)
@@ -1954,7 +1955,8 @@ static int drop_privileges(const char *user, uid_t uid, gid_t gid) {
 		if (setgid(gid) == -1) {
 			syslog(
 				LOG_WARNING,
-				"Could not set effective GID=%d", (int)gid
+				"Could not set effective GID=%d",
+				(int)gid
 			);
 			return(ERROR);
 		}
@@ -1981,7 +1983,11 @@ static int drop_privileges(const char *user, uid_t uid, gid_t gid) {
 #endif
 
 	if (setuid(uid) == -1) {
-		syslog(LOG_WARNING, "Could not set effective UID=%d", (int)uid);
+		syslog(
+			LOG_WARNING,
+			"Could not set effective UID=%d",
+			(int)uid
+		);
 		return(ERROR);
 	}
 
@@ -1992,12 +1998,22 @@ static int drop_privileges(const char *user, uid_t uid, gid_t gid) {
 void do_chroot(void) {
 	if (nsca_chroot != NULL) {
 		if (chdir(nsca_chroot) != 0) {
-			syslog(LOG_ERR, "Could not chdir into chroot directory: %s", strerror(errno));
+			syslog(
+				LOG_ERR,
+				"Could not chdir into chroot directory (%d: %s)",
+				errno,
+				strerror(errno)
+			);
 			do_exit(STATE_UNKNOWN);
 		}
 
 		if (chroot(".") != 0) {
-			syslog(LOG_ERR, "Could not chroot: %s", strerror(errno));
+			syslog(
+				LOG_ERR,
+				"Could not chroot (%d: %s)",
+				errno,
+				strerror(errno)
+			);
 			do_exit(STATE_UNKNOWN);
 		}
 	}
@@ -2056,7 +2072,7 @@ void sighandler(int sig) {
 	if (sig == SIGHUP) {
 		sigrestart = TRUE;
 
-		syslog(LOG_NOTICE, "Caught SIGHUP - restarting...");
+		syslog(LOG_INFO, "Caught SIGHUP - restarting...");
 	}
 
 	/* else begin shutting down... */
@@ -2067,7 +2083,11 @@ void sighandler(int sig) {
 
 		sigshutdown = TRUE;
 
-		syslog(LOG_NOTICE, "Caught SIG%s - shutting down...", sigs[sig]);
+		syslog(
+			LOG_INFO,
+			"Caught SIG%s - shutting down...",
+			sigs[sig]
+		);
 	}
 
 	return;

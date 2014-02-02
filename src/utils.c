@@ -220,7 +220,7 @@ int encrypt_init(char *password, int encryption_method, char *received_iv, struc
 #endif
 
 	/* open encryption module */
-	if ((CI->td=mcrypt_module_open(CI->mcrypt_algorithm, NULL, CI->mcrypt_mode, NULL)) == MCRYPT_FAILED) {
+	if ((CI->td = mcrypt_module_open(CI->mcrypt_algorithm, NULL, CI->mcrypt_mode, NULL)) == MCRYPT_FAILED) {
 		syslog(
 			LOG_ERR,
 			"Could not open mcrypt algorithm '%s' with mode '%s'",
@@ -246,7 +246,7 @@ int encrypt_init(char *password, int encryption_method, char *received_iv, struc
 	}
 
 	/* allocate memory for IV buffer */
-	if ((CI->IV=(char *)malloc(iv_size)) ==NULL ) {
+	if ((CI->IV = (char *)malloc(iv_size)) == NULL) {
 		syslog(LOG_ERR, "Could not allocate memory for IV buffer");
 		return(ERROR);
 	}
@@ -259,7 +259,7 @@ int encrypt_init(char *password, int encryption_method, char *received_iv, struc
 	CI->keysize = mcrypt_enc_get_key_size(CI->td);
 
 	/* generate an encryption/decription key using the password */
-	if ((CI->key=(char *)malloc(CI->keysize)) == NULL) {
+	if ((CI->key = (char *)malloc(CI->keysize)) == NULL) {
 		syslog(LOG_ERR, "Could not allocate memory for encryption/decryption key");
 		return(ERROR);
 	}

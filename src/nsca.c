@@ -1016,7 +1016,8 @@ static void wait_for_connections(void) {
 	syslog(LOG_NOTICE, "Starting up daemon");
 
 	if (debug == TRUE)
-		syslog(LOG_DEBUG,
+		syslog(
+			LOG_DEBUG,
 			"Listening for connections on port %d",
 			htons(myname.sin_port)
 		);

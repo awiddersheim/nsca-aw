@@ -681,34 +681,49 @@ static void install_child_handler(void) {
 }
 
 /* register a file descriptor to be polled for an event set */
-static void register_poll(short events, int fd) {
+static int register_poll(short events, int fd) {
 	int i;
 
 	/* if it's already in the list, just flag the events */
 	for (i = 0; i < npfds; i++) {
 		if (pfds[i].fd == fd) {
 			pfds[i].events|=events;
-			return;
+			return(OK);
 		}
 	}
 
 	/* else add it to the list */
 	if (maxpfds == 0) {
 		maxpfds++;
-		pfds=malloc(sizeof(struct pollfd));
+		pfds = malloc(sizeof(struct pollfd));
+		if (pfds == NULL) {
+			syslog(
+				LOG_ERR,
+				"Failure calling malloc() in register_poll()"
+			);
+			return(ERROR);
+		}
 	}
 	else if (npfds + 1 > maxpfds) {
 		maxpfds++;
-		pfds=realloc(pfds, sizeof(struct pollfd) * maxpfds);
+		pfds = realloc(pfds, sizeof(struct pollfd) * maxpfds);
+		if (pfds == NULL) {
+			syslog(
+				LOG_ERR,
+				"Failure calling realloc() in register_poll()"
+			);
+			return(ERROR);
+		}
 	}
 
 	pfds[npfds].fd = fd;
 	pfds[npfds].events = events;
 	npfds++;
+	return(OK);
 }
 
 /* register a read handler */
-static void register_read_handler(
+static int register_read_handler(
 	struct conn_entry conn_entry,
 	void (*fp)(struct conn_entry, void *),
 	void *data
@@ -716,7 +731,8 @@ static void register_read_handler(
 	int i;
 
 	/* register our interest in this descriptor */
-	register_poll(POLLIN, conn_entry.sock);
+	if (register_poll(POLLOUT, conn_entry.sock) == ERROR)
+		return(ERROR);
 
 	/* if it's already in the list, just update the handler */
 	for (i = 0; i < nrhand; i++) {
@@ -726,18 +742,32 @@ static void register_read_handler(
 			rhand[i].data = data;
 			rhand[i].keepalive = time(NULL);
 			rhand[i].alive = TRUE;
-			return;
+			return(OK);
 		}
 	}
 
 	/* else add it to the list */
-	if (maxrhand==0) {
+	if (maxrhand == 0) {
 		maxrhand++;
 		rhand = malloc(sizeof(struct handler_entry));
+		if (rhand == NULL) {
+			syslog(
+				LOG_ERR,
+				"Failure calling malloc() in register_read_handler()"
+			);
+			return(ERROR);
+		}
 	}
 	else if (nrhand + 1 > maxrhand) {
 		maxrhand++;
 		rhand = realloc(rhand, sizeof(struct handler_entry) * maxrhand);
+		if (rhand == NULL) {
+			syslog(
+				LOG_ERR,
+				"Failure calling realloc() in register_read_handler()"
+			);
+			return(ERROR);
+		}
 	}
 
 	rhand[nrhand].conn_entry = conn_entry;
@@ -746,10 +776,11 @@ static void register_read_handler(
 	rhand[nrhand].keepalive = time(NULL);
 	rhand[nrhand].alive = TRUE;
 	nrhand++;
+	return(OK);
 }
 
 /* register a write handler */
-static void register_write_handler(
+static int register_write_handler(
 	struct conn_entry conn_entry,
 	void (*fp)(struct conn_entry, void *),
 	void *data
@@ -757,7 +788,8 @@ static void register_write_handler(
 	int i;
 
 	/* register our interest in this descriptor */
-	register_poll(POLLOUT, conn_entry.sock);
+	if (register_poll(POLLOUT, conn_entry.sock) == ERROR)
+		return(ERROR);
 
 	/* if it's already in the list, just update the handler */
 	for (i = 0; i < nwhand; i++) {
@@ -767,7 +799,7 @@ static void register_write_handler(
 			whand[i].data = data;
 			whand[i].keepalive = time(NULL);
 			whand[i].alive = TRUE;
-			return;
+			return(OK);
 		}
 	}
 
@@ -775,10 +807,24 @@ static void register_write_handler(
 	if (maxwhand == 0) {
 		maxwhand++;
 		whand = malloc(sizeof(struct handler_entry));
+		if (whand == NULL) {
+			syslog(
+				LOG_ERR,
+				"Failure calling malloc() in register_write_handler()"
+			);
+			return(ERROR);
+		}
 	}
 	else if (nwhand + 1 > maxwhand) {
 		maxwhand++;
 		whand = realloc(whand, sizeof(struct handler_entry) * maxwhand);
+		if (whand == NULL) {
+			syslog(
+				LOG_ERR,
+				"Failure calling realloc() in register_write_handler()"
+			);
+			return(ERROR);
+		}
 	}
 
 	whand[nwhand].conn_entry = conn_entry;
@@ -787,6 +833,7 @@ static void register_write_handler(
 	whand[nwhand].keepalive = time(NULL);
 	whand[nwhand].alive = TRUE;
 	nwhand++;
+	return(OK);
 }
 
 /* find read handler */

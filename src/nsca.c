@@ -1,11 +1,8 @@
 /*******************************************************************************
- *
  * NSCA.C - Nagios Service Check Acceptor
  * Copyright (c) 2009 Nagios Core Development Team and Community Contributors
  * Copyright (c) 2000-2009 Ethan Galstad (egalstad@nagios.org)
  * License: GPL v2
- *
- * Last Modified: 01-27-2012
  *
  * Command line: NSCA -c <config_file> [mode]
  *
@@ -13,7 +10,6 @@
  *
  * This program is designed to run as a daemon on the main Nagios machine
  * and accept service check results from remote hosts.
- *
  ******************************************************************************/
 
 #include "../include/common.h"

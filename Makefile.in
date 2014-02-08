@@ -1,15 +1,12 @@
 ###############################
 # Makefile for NSCA
-#
-# Last Modified: 10-15-2003
 ###############################
-
 
 # Source code directories
 SRC_BASE=./src/
 SRC_INCLUDE=./include/
 
-all:	
+all:
 	cd $(SRC_BASE); $(MAKE) $@ ; cd ..
 
 	@echo ""
@@ -55,4 +52,3 @@ distclean: clean
 	rm -f sample-config/nsca.cfg sample-config/send_nsca.cfg sample-config/nsca.xinetd
 
 devclean: distclean
-

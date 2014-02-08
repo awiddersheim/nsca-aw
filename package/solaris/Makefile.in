@@ -1,7 +1,5 @@
 ###################################
 # Makefile for NSCA Solaris Package
-#
-# Last Modified: 6 Jan 2012
 ###################################
 
 TARGET_OS=@TARGET_OS@

@@ -1,16 +1,9 @@
 /**********************************************************************************
- *
  * SEND_NSCA.C - NSCA Client
  * License: GPL v2
  * Copyright (c) 2000-2007 Ethan Galstad (nagios@nagios.org)
  *
- * Last Modified: 01-27-2012
- *
  * Command line: SEND_NSCA <host_address> [-p port] [-to to_sec] [-c config_file]
- *
- * Description:
- *
- *
  *********************************************************************************/
 
 /*#define DEBUG*/

@@ -1,11 +1,8 @@
 /****************************************************************************
- *
  * UTILS.C - Utility functions for NSCA
  *
  * License: GPL
  * Copyright (c) 2000-2008 Ethan Galstad (nagios@nagios.org)
- *
- * Last Modified: 01-15-2008
  *
  * Description:
  *
@@ -26,7 +23,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
  ****************************************************************************/
 
 #include "../include/common.h"

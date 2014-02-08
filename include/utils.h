@@ -5,11 +5,6 @@
  * License: GPL
  * Copyright (c) 2000-2003 Ethan Galstad (nagios@nagios.org)
  *
- * Last Modified: 10-15-2003
- *
- * Description:
- *
- *
  * License Information:
  *
  * This program is free software; you can redistribute it and/or modify

@@ -44,6 +44,7 @@ case "$1" in
 	# Stop daemons.
 	echo -n "Shutting down nsca: "
 	killproc nsca
+	RETVAL=$?
 	echo
 	rm -f $LockFile
 	;;
@@ -53,12 +54,11 @@ case "$1" in
 	;;
   status)
 	status nsca
+	exit $?
 	;;
   *)
 	echo "Usage: nsca {start|stop|restart|status}"
 	exit 1
 esac
 
-exit 0
-
-
+exit $RETVAL

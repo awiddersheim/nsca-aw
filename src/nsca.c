@@ -1213,7 +1213,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 	/* handle the connection */
 	if (mode == SINGLE_PROCESS_DAEMON)
 		/* mark the connection as ready to be handled */
-		if(register_write_handler(new_conn_entry, handle_connection, NULL) == ERRROR) {
+		if(register_write_handler(new_conn_entry, handle_connection, NULL) == ERROR) {
 			syslog(
 				LOG_ERR,
 				"Could not setup write handler for %s:%d in accept_connection()",

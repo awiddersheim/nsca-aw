@@ -269,10 +269,12 @@ int main(int argc, char **argv) {
 		break;
 	}
 
-	/* we are now running in daemon mode, or the connection handed over by inetd has been completed, so the parent process exits */
+	/* now running in daemon mode or the connection handed
+	 * over by inetd has been completed so the parent
+	 * process exits */
 	do_exit(STATE_OK);
 
-	/* keep the compilers happy... */
+	/* keep the compilers happy */
 	return(STATE_OK);
 }
 

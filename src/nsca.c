@@ -937,7 +937,7 @@ static void handle_events(void) {
 			if (debug == TRUE)
 				syslog(
 					LOG_INFO,
-					"Connection from %s:%d timed out reading after %d seconds",
+					"Connection from %s:%d timed out during rhand after %d seconds",
 					rhand[i].conn_entry.ipaddr,
 					rhand[i].conn_entry.port,
 					socket_timeout
@@ -953,7 +953,7 @@ static void handle_events(void) {
 			if (debug == TRUE)
 				syslog(
 					LOG_INFO,
-					"Connection from %s:%d timed out writing after %d seconds",
+					"Connection from %s:%d timed out during whand after %d seconds",
 					whand[i].conn_entry.ipaddr,
 					whand[i].conn_entry.port,
 					socket_timeout
@@ -1297,13 +1297,22 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 	rc = sendall(conn_entry.sock, (char *)&send_packet, &bytes_to_send, socket_timeout);
 
 	/* there was an error sending the packet */
-	if (rc == -1) {
-		syslog(
-			LOG_ERR,
-			"Could not send init packet to %s:%d",
-			conn_entry.ipaddr,
-			conn_entry.port
-		);
+	if (rc < 0) {
+		if (rc == TIMEOUT_ERROR)
+			syslog(
+				LOG_ERR,
+				"Connection from %s:%d timed out during send() after %d seconds",
+				conn_entry.ipaddr,
+				conn_entry.port,
+				socket_timeout
+			);
+		else
+			syslog(
+				LOG_ERR,
+				"Could not send init packet to %s:%d",
+				conn_entry.ipaddr,
+				conn_entry.port
+			);
 		encrypt_cleanup(decryption_method, CI);
 		close(conn_entry.sock);
 		if (mode == MULTI_PROCESS_DAEMON)
@@ -1390,13 +1399,23 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 			packet_length = OLD_PACKET_LENGTH;
 			plugin_length = OLD_PLUGINOUTPUT_LENGTH;
 		} else {
-			if (debug == TRUE)
-				syslog(
-					LOG_ERR,
-					"End of connection from %s:%d",
-					conn_entry.ipaddr,
-					conn_entry.port
-				);
+			if (debug == TRUE) {
+				if (rc == TIMEOUT_ERROR)
+					syslog(
+						LOG_ERR,
+						"Connection from %s:%d timed out during recv() after %d seconds",
+						conn_entry.ipaddr,
+						conn_entry.port,
+						socket_timeout
+					);
+				else
+					syslog(
+						LOG_INFO,
+						"End of connection from %s:%d",
+						conn_entry.ipaddr,
+						conn_entry.port
+					);
+			}
 			encrypt_cleanup(decryption_method, CI);
 			close(conn_entry.sock);
 			if (mode == SINGLE_PROCESS_DAEMON)

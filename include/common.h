@@ -28,11 +28,12 @@
 
 #define OK		0
 #define ERROR		-1
+#define TIMEOUT_ERROR	-2
 
 #define TRUE		1
 #define FALSE		0
 
-#define STATE_UNKNOWN	3	/* service state return codes */
+#define STATE_UNKNOWN	3		/* service state return codes */
 #define	STATE_CRITICAL	2
 #define STATE_WARNING	1
 #define STATE_OK	0

@@ -222,7 +222,8 @@ int sendall(int s, char *buf, int *len, int timeout) {
 		/* check timeout */
 		time(&current_time);
 		if (current_time - start_time > timeout)
-			return(-1);
+			/* timeout return code */
+			return(TIMEOUT_ERROR);
 
 		/* send some data */
 		n = send(s, buf + total, bytesleft, 0);
@@ -275,7 +276,8 @@ int recvall(int s, char *buf, int *len, int timeout) {
 		/* check timeout */
 		time(&current_time);
 		if (current_time - start_time > timeout)
-			return(-1);
+			/* timeout return code */
+			return(TIMEOUT_ERROR);
 
 		/* receive some data */
 		n = recv(s, buf + total, bytesleft, 0);

@@ -1211,7 +1211,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 		);
 
 	/* handle the connection */
-	if (mode == SINGLE_PROCESS_DAEMON)
+	if (mode == SINGLE_PROCESS_DAEMON) {
 		/* mark the connection as ready to be handled */
 		if(register_write_handler(new_conn_entry, handle_connection, NULL) == ERROR) {
 			syslog(
@@ -1223,7 +1223,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 			close(new_conn_entry.sock);
 			return;
 		}
-	else
+	} else
 		/* handle the client connection */
 		handle_connection(new_conn_entry, NULL);
 

@@ -1330,7 +1330,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 
 	/* open the command file if we're aggregating writes */
 	if (aggregate_writes==TRUE) {
-		if (open_command_file() == ERROR) {
+		if (open_command_file(conn_entry) == ERROR) {
 			encrypt_cleanup(decryption_method, CI);
 			close(conn_entry.sock);
 			if (mode == MULTI_PROCESS_DAEMON)
@@ -1558,6 +1558,7 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	//syslog(LOG_ERR,"'%s' (%s) []",check_result_path, strlen(check_result_path));
 	if (check_result_path == NULL)
 		write_check_result(
+			conn_entry,
 			host_name,
 			svc_description,
 			return_code,
@@ -1566,6 +1567,7 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 		);
 	else
 		write_checkresult_file(
+			conn_entry,
 			host_name,
 			svc_description,
 			return_code,
@@ -1578,6 +1580,7 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 
 /* writes service/host check results to the Nagios checkresult directory */
 static int write_checkresult_file(
+	struct conn_entry conn_entry,
 	char *host_name,
 	char *svc_description,
 	int return_code,
@@ -1585,7 +1588,12 @@ static int write_checkresult_file(
 	time_t check_time
 ) {
 	if (debug == TRUE)
-		syslog(LOG_INFO, "Attempting to write checkresult file");
+		syslog(
+			LOG_INFO,
+			"Attempting to write checkresult file for %s:%d",
+			conn_entry.ipaddr,
+			conn_entry.port
+		);
 
 	mode_t new_umask = 077;
 	mode_t old_umask;
@@ -1604,7 +1612,9 @@ static int write_checkresult_file(
 	if (asprintf(&checkresult_file, "%s/cXXXXXX", check_result_path) < 0) {
 		syslog(
 			LOG_ERR,
-			"Issue running asprintf() in write_checkresult_file()"
+			"Issue running asprintf() in write_checkresult_file() for %s:%d",
+			conn_entry.ipaddr,
+			conn_entry.port
 		);
 		return(ERROR);
 	}
@@ -1614,10 +1624,12 @@ static int write_checkresult_file(
 		if (checkresult_file_fp == NULL) {
 			syslog(
 				LOG_ERR,
-				"Unable to open file '%s' (%d: %s)",
+				"Unable to open file '%s' (%d: %s) for %s:%d",
 				checkresult_file,
 				errno,
-				strerror(errno)
+				strerror(errno),
+				conn_entry.ipaddr,
+				conn_entry.port
 			);
 			free(checkresult_file);
 			return(ERROR);
@@ -1625,10 +1637,12 @@ static int write_checkresult_file(
 	} else {
 		syslog(
 			LOG_ERR,
-			"Unable to open and write checkresult file '%s' (%d: %s), failing back to PIPE",
+			"Unable to open and write checkresult file '%s' (%d: %s) for %s:%d, failing back to PIPE",
 			checkresult_file,
 			errno,
-			strerror(errno)
+			strerror(errno),
+			conn_entry.ipaddr,
+			conn_entry.port
 		);
 
 		/* clear temp buffer */
@@ -1636,6 +1650,7 @@ static int write_checkresult_file(
 
 		return(
 			write_check_result(
+				conn_entry,
 				host_name,
 				svc_description,
 				return_code,
@@ -1648,8 +1663,10 @@ static int write_checkresult_file(
 	if (debug == TRUE)
 		syslog(
 			LOG_INFO,
-			"checkresult file '%s' open for write",
-			checkresult_file
+			"Checkresult file '%s' for %s:%d open for write",
+			checkresult_file,
+			conn_entry.ipaddr,
+			conn_entry.port
 		);
 
 	time(&current_time);
@@ -1686,7 +1703,9 @@ static int write_checkresult_file(
 	if (asprintf(&checkresult_ok_file, "%s.ok", checkresult_file) < 0) {
 		syslog(
 			LOG_ERR,
-			"Issue running asprintf() in write_checkresult_file()"
+			"Issue running asprintf() in write_checkresult_file() for %s:%d",
+			conn_entry.ipaddr,
+			conn_entry.port
 		);
 		return(ERROR);
 	}
@@ -1695,10 +1714,12 @@ static int write_checkresult_file(
 	if (checkresult_ok_file_fp == NULL) {
 		syslog(
 			LOG_ERR,
-			"Unable to open file '%s' (%d: %s)",
+			"Unable to open file '%s' (%d: %s) for %s:%d",
 			checkresult_ok_file,
 			errno,
-			strerror(errno)
+			strerror(errno),
+			conn_entry.ipaddr,
+			conn_entry.port
 		);
 		free(checkresult_ok_file_fp);
 		return(ERROR);
@@ -1706,8 +1727,10 @@ static int write_checkresult_file(
 	if (debug == TRUE)
 		syslog(
 			LOG_INFO,
-			"checkresult completion file '%s' open",
-			checkresult_ok_file
+			"Checkresult completion file '%s' open for %s:%d",
+			checkresult_ok_file,
+			conn_entry.ipaddr,
+			conn_entry.port
 		);
 	fclose(checkresult_ok_file_fp);
 
@@ -1723,6 +1746,7 @@ static int write_checkresult_file(
 
 /* writes service/host check results to the Nagios command file */
 static int write_check_result(
+	struct conn_entry conn_entry,
 	char *host_name,
 	char *svc_description,
 	int return_code,
@@ -1730,10 +1754,15 @@ static int write_check_result(
 	time_t check_time
 ) {
 	if (debug == TRUE)
-		syslog(LOG_INFO, "Attempting to write to nagios command pipe");
+		syslog(
+			LOG_INFO,
+			"Attempting to write to nagios command pipe for %s:%d",
+			conn_entry.ipaddr,
+			conn_entry.port
+		);
 
 	if (aggregate_writes == FALSE) {
-		if (open_command_file() == ERROR)
+		if (open_command_file(conn_entry) == ERROR)
 			return(ERROR);
 	}
 
@@ -1769,7 +1798,7 @@ static int write_check_result(
 }
 
 /* opens the command file for writing */
-static int open_command_file(void) {
+static int open_command_file(struct conn_entry conn_entry) {
 	struct stat statbuf;
 
 	/* file is already open */
@@ -1781,9 +1810,11 @@ static int open_command_file(void) {
 		if (debug == TRUE)
 			syslog(
 				LOG_ERR,
-				"Command file '%s' does not exist, attempting to use alternate dump file '%s' for output",
+				"Command file '%s' does not exist, attempting to use alternate dump file '%s' for output for %s:%d",
 				command_file,
-				alternate_dump_file
+				alternate_dump_file,
+				conn_entry.ipaddr,
+				conn_entry.port
 			);
 
 		/* try and write checks to alternate dump file */
@@ -1792,8 +1823,10 @@ static int open_command_file(void) {
 			if (debug == TRUE)
 				syslog(
 					LOG_ERR,
-					"Could not open alternate dump file '%s' for appending",
-					alternate_dump_file
+					"Could not open alternate dump file '%s' for appending for %s:%d",
+					alternate_dump_file,
+					conn_entry.ipaddr,
+					conn_entry.port
 				);
 			return(ERROR);
 		}
@@ -1809,9 +1842,11 @@ static int open_command_file(void) {
 		if (debug == TRUE)
 			syslog(
 				LOG_ERR,
-				"Could not open command file '%s' for %s",
+				"Could not open command file '%s' for %s for %s:%d",
 				command_file,
-				(append_to_file==TRUE) ? "appending" : "writing"
+				(append_to_file==TRUE) ? "appending" : "writing",
+				conn_entry.ipaddr,
+				conn_entry.port
 			);
 		return(ERROR);
 	}

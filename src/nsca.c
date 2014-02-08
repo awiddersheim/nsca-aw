@@ -1072,7 +1072,7 @@ static void wait_for_connections(void) {
 		if (register_read_handler(conn_entry, accept_connection, NULL) == ERROR) {
 			syslog(
 				LOG_ERR,
-				"Could not completely setup listener"
+				"Could not setup read handler for listener socket in wait_for_connections()"
 			);
 			close(sock);
 			do_exit(STATE_CRITICAL);
@@ -1114,7 +1114,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 		if (register_read_handler(conn_entry, accept_connection, NULL) == ERROR) {
 			syslog(
 				LOG_ERR,
-				"Unable to setup listener socket in accept_connection()"
+				"Could not setup read handler for listener socket in accept_connection()"
 			);
 			close(conn_entry.sock);
 			do_exit(STATE_CRITICAL);
@@ -1343,7 +1343,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 		if (register_read_handler(conn_entry, handle_connection_read, (void *)CI) == ERROR) {
 			syslog(
 				LOG_ERR,
-				"Could not setup read handler for %s:%d",
+				"Could not setup read handler for %s:%d in handle_connection()",
 				conn_entry.ipaddr,
 				conn_entry.sock
 			);
@@ -1429,7 +1429,7 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 		if (register_read_handler(conn_entry, handle_connection_read, (void *)CI) == ERROR) {
 			syslog(
 				LOG_ERR,
-				"Could not setup read handler for %s:%d",
+				"Could not setup read handler for %s:%d in handle_connection_read()",
 				conn_entry.ipaddr,
 				conn_entry.sock
 			);

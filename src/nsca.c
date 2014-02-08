@@ -937,7 +937,7 @@ static void handle_events(void) {
 			if (debug == TRUE)
 				syslog(
 					LOG_INFO,
-					"Connection from %s:%d timed out after %d seconds",
+					"Connection from %s:%d timed out reading after %d seconds",
 					rhand[i].conn_entry.ipaddr,
 					rhand[i].conn_entry.port,
 					socket_timeout
@@ -953,7 +953,7 @@ static void handle_events(void) {
 			if (debug == TRUE)
 				syslog(
 					LOG_INFO,
-					"Connection from %s:%d timed out after %d seconds",
+					"Connection from %s:%d timed out writing after %d seconds",
 					whand[i].conn_entry.ipaddr,
 					whand[i].conn_entry.port,
 					socket_timeout

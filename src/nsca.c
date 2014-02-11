@@ -535,7 +535,7 @@ static int read_config_file(char *filename) {
 				);
 				return(ERROR);
 			}
-			checkresult_test_fd = open(checkresult_test, O_WRONLY|O_CREAT);
+			checkresult_test_fd = open(checkresult_test, O_WRONLY|O_CREAT, 0644);
 			if (checkresult_test_fd > 0) {
 				if (unlink(checkresult_test) < 0) {
 					syslog(

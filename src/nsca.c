@@ -1814,14 +1814,21 @@ static int write_check_result(
 
 /* opens the command file for writing */
 static int open_command_file(struct conn_entry conn_entry) {
-	struct stat statbuf;
+	int fd;
 
 	/* file is already open */
 	if (command_file_fp != NULL && using_alternate_dump_file == FALSE)
 		return(OK);
 
+	/* open the command file for writing or appending (without using
+ 	 * O_CREAT like fopen() would)
+ 	 */
+	do {
+		fd = open(command_file, O_WRONLY | ((append_to_file == TRUE) ? O_APPEND : 0));
+	} while (fd < 0 && errno == EINTR);
+
 	/* command file doesn't exist - monitoring app probably isn't running... */
-	if (stat(command_file, &statbuf)) {
+	if (fd < 0 && errno == ENOENT) {
 		if (debug == TRUE)
 			syslog(
 				LOG_ERR,
@@ -1852,8 +1859,7 @@ static int open_command_file(struct conn_entry conn_entry) {
 	}
 
 	/* open the command file for writing or appending */
-	command_file_fp = fopen(command_file, (append_to_file==TRUE) ? "a" : "w");
-	if (command_file_fp == NULL) {
+	if (fd < 0 || (command_file_fp = fdopen(fd, (append_to_file == TRUE) ? "a" : "w")) == NULL) {
 		if (debug == TRUE)
 			syslog(
 				LOG_ERR,

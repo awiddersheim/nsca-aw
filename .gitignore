@@ -12,3 +12,5 @@ src/Makefile
 src/nsca
 src/send_nsca
 subst
+*.swp
+*.swo

@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
 	/* generate the CRC 32 table */
 	generate_crc32_table();
 
-	/* how should we handle client connections? */
+	/* how client connections be handled? */
 	switch(mode) {
 	case INETD:
 		/* chroot if configured */
@@ -175,14 +175,14 @@ int main(int argc, char **argv) {
 		);
 		conn_entry.port = 0;
 
-		/* if we're running under inetd, handle one connection and get out */
+		/* if running under inetd, handle one connection and get out */
 		handle_connection(conn_entry, NULL);
 		break;
 
 	case MULTI_PROCESS_DAEMON:
 
 		/* older style, mult-process daemon */
-		/* execution cascades below... */
+		/* execution cascades below */
 		install_child_handler();
 
 		/*     |
@@ -195,7 +195,7 @@ int main(int argc, char **argv) {
 
 		/* daemonize and start listening for requests... */
 		if (fork() == 0) {
-			/* we're a daemon - set up a new process group */
+			/* in daemon mode - set up a new process group */
 			setsid();
 
 			/* handle signals */
@@ -346,7 +346,7 @@ static int read_config_file(char *filename) {
 	/* open the config file for reading */
 	fp = fopen(filename, "r");
 
-	/* exit if we couldn't open the config file */
+	/* exit if the config file could not be opened */
 	if (fp == NULL) {
 		syslog(LOG_ERR, "Could not open config file '%s' for reading", filename);
 		return(ERROR);
@@ -667,7 +667,7 @@ int get_log_facility(char *varvalue) {
 	return(OK);
 }
 
-/* get rid of all the children we can... */
+/* get rid of all the dead children */
 static void reap_children(int sig) {
 	while(waitpid(-1, NULL, WNOHANG) > 0);
 
@@ -980,7 +980,7 @@ static void wait_for_connections(void) {
 	/* create a socket for listening */
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 
-	/* exit if we couldn't create the socket */
+	/* exit if the socket could not be created */
 	if (sock < 0) {
 		syslog(
 			LOG_ERR,
@@ -991,7 +991,7 @@ static void wait_for_connections(void) {
 		do_exit(STATE_CRITICAL);
 	}
 
-	/* set the reuse address flag so we don't get errors when restarting */
+	/* set the reuse address flag so there are no errors when restarting */
 	flag = 1;
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&flag, sizeof(flag)) < 0) {
 		syslog(
@@ -1005,7 +1005,7 @@ static void wait_for_connections(void) {
 	myname.sin_port = htons(server_port);
 	bzero(&myname.sin_zero, 8);
 
-	/* what address should we bind to? */
+	/* what address to bind to? */
 	if (!strlen(server_address))
 		myname.sin_addr.s_addr = INADDR_ANY;
 	else if (!my_inet_aton(server_address, &myname.sin_addr)) {
@@ -1077,7 +1077,7 @@ static void wait_for_connections(void) {
 	while(1) {
 		/* bail out if necessary */
 		if (sigrestart == TRUE || sigshutdown == TRUE) {
-			/* close the socket we're listening on */
+			/* close the listening socket */
 			close(sock);
 			break;
 		}
@@ -1118,7 +1118,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 
 	/* wait for a connection request */
 	while(1) {
-		/* we got a live one... */
+		/* there was a new connection */
 		if ((new_sd = accept(conn_entry.sock, (struct sockaddr *)&addr, &addrlen)) >= 0)
 			break;
 
@@ -1174,7 +1174,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 	}
 #endif
 
-	/* fork() if we have to... */
+	/* fork() if necessary */
 	if (mode == MULTI_PROCESS_DAEMON) {
 		pid = fork();
 
@@ -1316,7 +1316,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 		return;
 	}
 
-	/* for some reason we didn't send all the bytes we were supposed to */
+	/* for some reason not all the data that should have beeen sent was sent */
 	else if (bytes_to_send < sizeof(send_packet)) {
 		syslog(
 			LOG_ERR,
@@ -1333,7 +1333,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 		return;
 	}
 
-	/* open the command file if we're aggregating writes */
+	/* open the command file if aggregating writes */
 	if (aggregate_writes==TRUE) {
 		if (open_command_file(conn_entry) == ERROR) {
 			encrypt_cleanup(decryption_method, CI);
@@ -1383,7 +1383,7 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	int plugin_length=MAX_PLUGINOUTPUT_LENGTH;
 	CI = data;
 
-	/* process all data we get from the client... */
+	/* process all data from the client */
 
 	/* read the packet from the client */
 	bytes_to_recv = sizeof(receive_packet);
@@ -1421,7 +1421,7 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 		}
 	}
 
-	/* we couldn't read the correct amount of data, so bail out */
+	/* could not read the correct amount of data, so bail out */
 	if (bytes_to_recv != packet_length) {
 		syslog(
 			LOG_ERR,
@@ -1439,7 +1439,9 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 			do_exit(STATE_CRITICAL);
 	}
 
-	/* if we're single-process, we need to set things up so we handle the next packet after this one... */
+	/* if in single-process, need to set things up so the
+ 	 * next packt can be handled after this one
+ 	 */
 	if (mode == SINGLE_PROCESS_DAEMON)
 		if (register_read_handler(conn_entry, handle_connection_read, (void *)CI) == ERROR) {
 			syslog(
@@ -1565,12 +1567,11 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	}
 
 	/* write the check result to the external command file.
-	 * Note: it's OK to hang at this point if the write doesn't succeed, as there's
-	 * no way we could handle any other connection properly anyway.  so we don't
+	 * Note: it is OK to hang at this point if the write does not succeed, as there is
+	 * no way any other connection could be handled properly anyway. Do not
 	 * use poll() - which fails on a pipe with any data, so it would cause us to
 	 * only ever write one command at a time into the pipe.
 	 */
-	//syslog(LOG_ERR,"'%s' (%s) []",check_result_path, strlen(check_result_path));
 	if (check_result_path == NULL)
 		write_check_result(
 			conn_entry,
@@ -1803,9 +1804,9 @@ static int write_check_result(
 	if (aggregate_writes == FALSE)
 		close_command_file();
 	else
-		/* if we don't fflush() then we're writing in 4k non-CR-terminated blocks, and
+		/* if a fflush() is not peformed then only 4k non-CR-terminated blocks are written, and
 		 * anything else (eg. pscwatch) which writes to the file will be writing into
-		 * the middle of our commands.
+		 * the middle of the commands.
 		 */
 		fflush(command_file_fp);
 
@@ -1821,8 +1822,8 @@ static int open_command_file(struct conn_entry conn_entry) {
 		return(OK);
 
 	/* open the command file for writing or appending (without using
- 	 * O_CREAT like fopen() would)
- 	 */
+	 * O_CREAT like fopen() would)
+	 */
 	do {
 		fd = open(command_file, O_WRONLY | ((append_to_file == TRUE) ? O_APPEND : 0));
 	} while (fd < 0 && errno == EINTR);
@@ -1925,12 +1926,9 @@ int process_arguments(int argc, char **argv) {
 				strncpy(config_file, argv[x], sizeof(config_file)-1);
 				config_file[sizeof(config_file)-1] = '\0';
 				x++;
-			}
-			else
+			} else
 				return(ERROR);
-		}
-
-		else
+		} else
 			return ERROR;
 	}
 
@@ -2027,14 +2025,12 @@ static int get_user_info(const char *user, uid_t *uid) {
 			else
 				syslog(LOG_WARNING, "Could not get passwd entry for '%s'", user);
 			endpwent();
-		}
 
-		/* else we were passed the UID */
-		else
+		/* else the UID was passed */
+		} else
 			*uid = (uid_t)atoi(user);
-	}
-	else
-		*uid  =geteuid();
+	} else
+		*uid = geteuid();
 
 	return(OK);
 }
@@ -2053,10 +2049,9 @@ static int get_group_info(const char *group, gid_t *gid) {
 			else
 				syslog(LOG_WARNING, "Could not get group entry for '%s'", group);
 			endgrent();
-		}
 
-		/* else we were passed the GID */
-		else
+		/* else the GID was passed */
+		} else
 			*gid = (gid_t)atoi(group);
 		}
 	else
@@ -2070,7 +2065,10 @@ static int drop_privileges(const char *user, uid_t uid, gid_t gid) {
 	struct group *grp;
 	struct passwd *pw;
 
-	/* only drop privileges if we're running as root, so we don't interfere with being debugged while running as some random user */
+	/* only drop privileges if running as root so there
+	 * is no interfere with being debugged while running
+	 * as some random user
+	 */
 	if (getuid() != 0)
 		return OK;
 
@@ -2192,7 +2190,7 @@ void sighandler(int sig) {
 
 	sig%=i;
 
-	/* we received a SIGHUP, so restart... */
+	/* received a SIGHUP, so restart */
 	if (sig == SIGHUP) {
 		sigrestart = TRUE;
 
@@ -2201,7 +2199,7 @@ void sighandler(int sig) {
 
 	/* else begin shutting down... */
 	if (sig == SIGTERM) {
-		/* if shutdown is already true, we're in a signal trap loop! */
+		/* if shutdown is already true, in a signal trap loop */
 		if (sigshutdown == TRUE)
 			exit(STATE_CRITICAL);
 

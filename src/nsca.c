@@ -1197,6 +1197,20 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 	);
 	new_conn_entry.port = ntohs(addr.sin_port);
 
+	/* ignore connections where the port and address are null
+ 	 * as this can cause the daemon to hang
+ 	 */
+	if (new_conn_entry.port == 0 && new_conn_entry.ipaddr == NULL) {
+		syslog(
+			LOG_ERR,
+			"Ignoring connection whose address is 'null' and port is 0"
+		);
+		close(new_conn_entry.sock);
+		if (mode == MULTI_PROCESS_DAEMON)
+			do_exit(STATE_CRITICAL);
+		return;
+	}
+
 	/* log info to syslog facility */
 	if (debug == TRUE)
 		syslog(

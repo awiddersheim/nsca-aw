@@ -1,14 +1,15 @@
-dnl aclocal.m4 generated automatically by aclocal 1.4-p5
+# generated automatically by aclocal 1.9.6 -*- Autoconf -*-
 
-dnl Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
-dnl This file is free software; the Free Software Foundation
-dnl gives unlimited permission to copy and/or distribute it,
-dnl with or without modifications, as long as this notice is preserved.
+# Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+# 2005  Free Software Foundation, Inc.
+# This file is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
 
-dnl This program is distributed in the hope that it will be useful,
-dnl but WITHOUT ANY WARRANTY, to the extent permitted by law; without
-dnl even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-dnl PARTICULAR PURPOSE.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
 
 dnl Autoconf macros for libmcrypt
 dnl $id$
@@ -26,7 +27,7 @@ dnl $id$
 dnl AM_PATH_LIBMCRYPT([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
 dnl Test for libmcrypt, and define LIBMCRYPT_CFLAGS and LIBMCRYPT_LIBS
 dnl
-AC_DEFUN(AM_PATH_LIBMCRYPT,
+AC_DEFUN([AM_PATH_LIBMCRYPT],
 [dnl
 dnl Get the cflags and libraries from the libmcrypt-config script
 dnl
@@ -72,7 +73,7 @@ main ()
     fi
     LIBMCRYPT_CFLAGS="${TTINCLUDE}"
     LIBMCRYPT_LIBS="${TTLIBS} -lmcrypt"
-    AC_DEFINE(LIBMCRYPT22)
+    AC_DEFINE(LIBMCRYPT22, 1, [have libmcrypt 2.2])
 
 ,   libmcrypt_config_version="2.4.0"
     if test x$libmcrypt_config_prefix != x ; then
@@ -81,13 +82,13 @@ main ()
     fi
     LIBMCRYPT_CFLAGS="${TTINCLUDE}"
     LIBMCRYPT_LIBS="${TTLIBS} -lmcrypt -lltdl ${LIBADD_DL}"
-    AC_DEFINE(LIBMCRYPT24))
+    AC_DEFINE(LIBMCRYPT24, 1, [have libmcrypt 2.4]))
   else
 dnl libmcrypt-config was found
     LIBMCRYPT_CFLAGS=`$LIBMCRYPT_CONFIG $libmcrypt_config_args --cflags`
     LIBMCRYPT_LIBS=`$LIBMCRYPT_CONFIG $libmcrypt_config_args --libs`
     libmcrypt_config_version=`$LIBMCRYPT_CONFIG $libmcrypt_config_args --version`
-    AC_DEFINE(LIBMCRYPT24)
+    AC_DEFINE(LIBMCRYPT24, 1, [have libmcrypt 2.4])
   fi
 
   ac_save_CFLAGS="$CFLAGS"
@@ -176,7 +177,7 @@ main ()
         printf("*** of LIBMCRYPT, but you can also set the LIBMCRYPT_CONFIG environment to point to the\n");
         printf("*** correct copy of libmcrypt-config. (In this case, you will have to\n");
         printf("*** modify your LD_LIBRARY_PATH enviroment variable, or edit /etc/ld.so.conf\n");
-        printf("*** so that the correct libraries are found at run-time))\n");
+        printf("*** so that the correct libraries are found at run-time)\n");
       }
     }
   return 1;
@@ -252,6 +253,7 @@ return !!mcrypt_check_version(NULL);
      LIBMCRYPT_LIBS=""
      ifelse([$3], , :, [$3])
   fi
+  rm -f conf.libmcrypttest
   AC_SUBST(LIBMCRYPT_CFLAGS)
   AC_SUBST(LIBMCRYPT_LIBS)
 ])

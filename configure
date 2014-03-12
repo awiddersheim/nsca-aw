@@ -849,13 +849,13 @@ if test -n "$ac_init_help"; then
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
---with-mcrypt-lib=DIR sets location of the mcrypt client library
---with-mcrypt-inc=DIR sets location of the mcrypt client include files
+  --with-mcrypt-lib=DIR sets location of the mcrypt client library
+  --with-mcrypt-inc=DIR sets location of the mcrypt client include files
   --with-libmcrypt-prefix=PFX   Prefix where libmcrypt is installed (optional)
---with-log-facility=<facility> sets NSCA syslog facility
---with-nsca-user=<user> sets user name to run NSCA
---with-nsca-grp=<grp> sets group name to run NSCA
---with-nsca-port=<port> sets port number for NSCA to listen on
+  --with-log-facility=<facility> sets NSCA syslog facility
+  --with-nsca-user=<user> sets user name to run NSCA
+  --with-nsca-grp=<grp> sets group name to run NSCA
+  --with-nsca-port=<port> sets port number for NSCA to listen on
 
 Some influential environment variables:
   CC          C compiler command

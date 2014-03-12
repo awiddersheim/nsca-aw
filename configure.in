@@ -40,6 +40,9 @@ AC_PROG_MAKE_SET
 dnl Add warnings.
 AX_CFLAGS_WARN_ALL
 
+dnl Check for GNU.
+AC_DEFINE([_GNU_SOURCE], [], [Enable GNU extensions.])
+
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_TIME

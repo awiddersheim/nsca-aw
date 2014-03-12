@@ -2532,6 +2532,12 @@ case ".$ac_cv_cflags_warn_all" in
 esac
 
 
+
+cat >>confdefs.h <<\_ACEOF
+#define _GNU_SOURCE
+_ACEOF
+
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'

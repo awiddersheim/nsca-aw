@@ -2076,11 +2076,8 @@ static int get_group_info(const char *group, gid_t *gid) {
 
 /* drops privileges */
 static int drop_privileges(const char *user, uid_t uid, gid_t gid) {
-	struct group *grp;
-	struct passwd *pw;
-
 	/* only drop privileges if running as root so there
-	 * is no interfere with being debugged while running
+	 * is no interference with being debugged while running
 	 * as some random user
 	 */
 	if (getuid() != 0)

@@ -1481,7 +1481,7 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 			conn_entry.port
 		);
 
-		/*return;*/
+		/* return */
 		close(conn_entry.sock);
 		if (mode == SINGLE_PROCESS_DAEMON)
 			return;
@@ -1501,7 +1501,7 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 			conn_entry.port
 		);
 
-		/*return;*/
+		/* return */
 		close(conn_entry.sock);
 		if (mode == SINGLE_PROCESS_DAEMON)
 			return;

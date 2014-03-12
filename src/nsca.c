@@ -1098,7 +1098,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 	int new_sd;
 	pid_t pid;
 	struct sockaddr_in addr;
-	int addrlen;
+	socklen_t addrlen;
 	struct conn_entry new_conn_entry;
 #ifdef HAVE_LIBWRAP
 	struct request_info req;

@@ -14,3 +14,4 @@ src/send_nsca
 subst
 *.swp
 *.swo
+autom4te.cache

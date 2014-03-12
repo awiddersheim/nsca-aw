@@ -2195,7 +2195,6 @@ void sighandler(int sig) {
 		(char *)NULL
 	};
 	int i;
-	char temp_buffer[MAX_INPUT_BUFFER];
 
 	if (sig < 0)
 		sig=-sig;

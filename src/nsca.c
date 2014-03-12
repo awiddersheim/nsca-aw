@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
 			get_group_info(nsca_group, &gid);
 
 			/* write pid file */
-			if (write_pid_file(uid,gid) == ERROR)
+			if (write_pid_file(uid, gid) == ERROR)
 				return(STATE_CRITICAL);
 
 			/* chroot if configured */

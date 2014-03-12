@@ -399,7 +399,9 @@ void decrypt_buffer(
 	int encryption_method,
 	struct crypt_instance *CI
 ) {
+#ifdef HAVE_LIBMCRYPT
 	int x = 0;
+#endif
 
 #ifdef DEBUG
 	syslog(

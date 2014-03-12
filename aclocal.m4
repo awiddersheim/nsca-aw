@@ -228,7 +228,7 @@ AC_DEFUN([AM_PATH_LIBMCRYPT],
 dnl Get the cflags and libraries from the libmcrypt-config script
 dnl
 AC_ARG_WITH(libmcrypt-prefix,
-          [  --with-libmcrypt-prefix=PFX   Prefix where libmcrypt is installed (optional)],
+          AC_HELP_STRING([--with-libmcrypt-prefix=PFX], [prefix where libmcrypt is installed (optional)]),
           libmcrypt_config_prefix="$withval", libmcrypt_config_prefix="")
 
   if test x$libmcrypt_config_prefix != x ; then

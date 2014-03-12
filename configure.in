@@ -168,13 +168,17 @@ AC_TRY_COMPILE([#include <stdlib.h>
 [AC_DEFINE(SOCKET_SIZE_TYPE, int, [Socket Size Type]) AC_MSG_RESULT(int)])
 
 dnl Optional mcrypt library and include paths
-AC_ARG_WITH(mcrypt-lib,--with-mcrypt-lib=DIR sets location of the mcrypt client library,[
+AC_ARG_WITH(
+	[mcrypt-lib],
+	AC_HELP_STRING([--with-mcrypt-lib=DIR], [sets location of the mcrypt client library]), [
 	LDFLAGS="${LDFLAGS} -L${withval}"
 	LD_RUN_PATH="${withval}${LD_RUN_PATH:+:}${LD_RUN_PATH}"
-	])
-AC_ARG_WITH(mcrypt-inc,--with-mcrypt-inc=DIR sets location of the mcrypt client include files,[
+])
+AC_ARG_WITH(
+	[mcrypt-inc],
+	AC_HELP_STRING([--with-mcrypt-inc=DIR], [sets location of the mcrypt client include files]), [
 	CFLAGS="${CFLAGS} -I${withval}"
-	])
+])
 
 dnl Old checks for libmcrypt, no longer needed - 01/17/02 EG
 dnl AC_CHECK_LIB(ltdl,main)
@@ -224,13 +228,29 @@ if test x$MCRYPTLIBFOUND = xnope; then
 fi
 
 
-AC_ARG_WITH(log_facility,--with-log-facility=<facility> sets NSCA syslog facility,log_facility=$withval,log_facility=daemon)
+AC_ARG_WITH(
+	[log_facility],
+	AC_HELP_STRING([--with-log-facility=<facility>], [sets NSCA syslog facility]),
+	[log_facility=$withval],
+	[log_facility=daemon])
 AC_SUBST(log_facility)
 AC_DEFINE_UNQUOTED(NSCA_LOG_FACILITY,["$log_facility"],[NSCA syslog facility])
 
-AC_ARG_WITH(nsca_user,--with-nsca-user=<user> sets user name to run NSCA,nsca_user=$withval,nsca_user=nagios)
-AC_ARG_WITH(nsca_grp,--with-nsca-grp=<grp> sets group name to run NSCA,nsca_grp=$withval,nsca_grp=nagios)
-AC_ARG_WITH(nsca_port,--with-nsca-port=<port> sets port number for NSCA to listen on,nsca_port=$withval,nsca_port=5667)
+AC_ARG_WITH(
+	[nsca_user],
+	AC_HELP_STRING([--with-nsca-user=<user>], [sets user name to run NSCA]),
+	[nsca_user=$withval],
+	[nsca_user=nagios])
+AC_ARG_WITH(
+	[nsca_grp],
+	AC_HELP_STRING([--with-nsca-grp=<grp>], [sets group name to run NSCA]),
+	[nsca_grp=$withval],
+	[nsca_grp=nagios])
+AC_ARG_WITH(
+	[nsca_port],
+	AC_HELP_STRING([--with-nsca-port=<port>], [sets port number for NSCA to listen on]),
+	[nsca_port=$withval],
+	[nsca_port=5667])
 AC_SUBST(nsca_user)
 AC_SUBST(nsca_grp)
 AC_SUBST(nsca_port)

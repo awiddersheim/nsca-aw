@@ -789,6 +789,7 @@ static int register_read_handler(
 	rhand[nrhand].keepalive = time(NULL);
 	rhand[nrhand].alive = TRUE;
 	nrhand++;
+
 	return(OK);
 }
 
@@ -850,6 +851,7 @@ static int register_write_handler(
 	whand[nwhand].keepalive = time(NULL);
 	whand[nwhand].alive = TRUE;
 	nwhand++;
+
 	return(OK);
 }
 
@@ -862,13 +864,7 @@ static int find_rhand(int fd) {
 			return(i);
 	}
 
-	/* could not find the read handler */
-	syslog(
-		LOG_ERR,
-		"Could not find rhand (%d), handler stack corrupt - aborting",
-		fd
-	);
-	do_exit(STATE_CRITICAL);
+	return(ERROR);
 }
 
 /* find write handler */
@@ -880,13 +876,7 @@ static int find_whand(int fd) {
 			return(i);
 	}
 
-	/* could not find the write handler */
-	syslog(
-		LOG_ERR,
-		"Could not find whand (%d), handler stack corrupt - aborting",
-		fd
-	);
-	do_exit(STATE_CRITICAL);
+	return(ERROR);
 }
 
 /* handle pending events */
@@ -907,6 +897,14 @@ static void handle_events(void) {
 		if ((pfds[i].events&POLLIN) && (pfds[i].revents&(POLLIN|POLLERR|POLLHUP|POLLNVAL))) {
 			pfds[i].events&=~POLLIN;
 			hand = find_rhand(pfds[i].fd);
+			if (hand == ERROR) {
+				syslog(
+					LOG_ERR,
+					"Could not find rhand (%d), handler stack corrupt - aborting",
+					pfds[i].fd
+				);
+				do_exit(STATE_CRITICAL);
+			}
 			handler = rhand[hand].handler;
 			data = rhand[hand].data;
 			rhand[hand].handler = NULL;
@@ -918,6 +916,14 @@ static void handle_events(void) {
 		if ((pfds[i].events&POLLOUT) && (pfds[i].revents&(POLLOUT|POLLERR|POLLHUP|POLLNVAL))) {
 			pfds[i].events&=~POLLOUT;
 			hand = find_whand(pfds[i].fd);
+			if (hand == ERROR) {
+				syslog(
+					LOG_ERR,
+					"Could not find whand (%d), handler stack corrupt - aborting",
+					pfds[i].fd
+				);
+				do_exit(STATE_CRITICAL);
+			}
 			handler = whand[hand].handler;
 			data = whand[hand].data;
 			whand[hand].handler = NULL;

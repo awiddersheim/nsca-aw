@@ -1211,8 +1211,8 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 	new_conn_entry.port = ntohs(addr.sin_port);
 
 	/* ignore connections where the port and address are null
- 	 * as this can cause the daemon to hang
- 	 */
+	 * as this can cause the daemon to hang
+	 */
 	if (new_conn_entry.port == 0 && new_conn_entry.ipaddr == NULL) {
 		syslog(
 			LOG_ERR,
@@ -1467,8 +1467,8 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	}
 
 	/* if in single-process, need to set things up so the
- 	 * next packt can be handled after this one
- 	 */
+	 * next packet can be handled after this one
+	 */
 	if (mode == SINGLE_PROCESS_DAEMON)
 		if (register_read_handler(conn_entry, handle_connection_read, (void *)CI) == ERROR) {
 			syslog(

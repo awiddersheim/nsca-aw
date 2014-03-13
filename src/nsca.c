@@ -139,7 +139,14 @@ int main(int argc, char **argv) {
 
 		/* get absolute path of current working directory */
 		strcpy(config_file, "");
-		getcwd(config_file, sizeof(config_file));
+		if (getcwd(config_file, sizeof(config_file)) == NULL) {
+			syslog(
+				LOG_ERR,
+				"Could not run getcwd() to read config file (%d: %s)",
+				errno,
+				strerror(errno)
+			);
+		}
 
 		/* append a forward slash */
 		strncat(config_file, "/", sizeof(config_file)-2);
@@ -153,7 +160,7 @@ int main(int argc, char **argv) {
 	/* read the config file */
 	result = read_config_file(config_file);
 
-	/* exit if there are errors... */
+	/* exit if there was an error */
 	if (result == ERROR)
 		do_exit(STATE_CRITICAL);
 

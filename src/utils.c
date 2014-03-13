@@ -30,6 +30,9 @@
 
 /*#define DEBUG*/
 
+/* function prototypes */
+static void generate_transmitted_iv(char *transmitted_iv);
+
 static unsigned long crc32_table[256];
 #ifdef HAVE_LIBMCRYPT
 static volatile sig_atomic_t mcrypt_initialized=FALSE;

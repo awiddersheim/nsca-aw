@@ -1714,7 +1714,7 @@ static int write_checkresult_file(
 	fprintf(
 		checkresult_file_fp,
 		"### %s Check Result ###\n",
-		(svc_description == "") ? "Host" : "Service"
+		(strcmp(svc_description, "")) ? "Host" : "Service"
 	);
 	fprintf(checkresult_file_fp, "host_name=%s\n", host_name);
 	if (strcmp(svc_description, ""))

@@ -1533,7 +1533,7 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	if (debug == TRUE)
 		syslog(
 			LOG_ERR,
-			"Time difference in packet: %lu seconds for host %s from %s:%d",
+			"Time difference in packet: %lu second(s) for host %s from %s:%d",
 			packet_age,
 			host_name,
 			conn_entry.ipaddr,
@@ -1545,7 +1545,7 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	) {
 		syslog(
 			LOG_ERR,
-			"Dropping packet with stale timestamp from %s:%d for %s - packet was %lu seconds old",
+			"Dropping packet with stale timestamp from %s:%d for %s - packet was %lu second(s) old",
 			conn_entry.ipaddr,
 			conn_entry.port,
 			host_name,

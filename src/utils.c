@@ -254,13 +254,13 @@ int encrypt_init(char *password, int encryption_method, char *received_iv, struc
 	/* get maximum key size for this algorithm */
 	CI->keysize = mcrypt_enc_get_key_size(CI->td);
 
-	/* generate an encryption/decription key using the password */
+	/* generate an encryption/decryption key using the password */
 	if ((CI->key = (char *)malloc(CI->keysize)) == NULL) {
 		syslog(LOG_ERR, "Could not allocate memory for encryption/decryption key");
 		return(ERROR);
 	}
 
-	bzero(CI->key,CI->keysize);
+	bzero(CI->key, CI->keysize);
 
 	if (CI->keysize < strlen(password))
 		strncpy(CI->key, password, CI->keysize);

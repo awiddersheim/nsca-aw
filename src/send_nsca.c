@@ -51,16 +51,14 @@ int main(int argc, char **argv) {
 	int result;
 	data_packet send_packet;
 	int bytes_to_send;
-	char input[MAX_INPUT_BUFFER];
 	char input_buffer[MAX_INPUT_BUFFER];
-	char *temp_ptr;
 	char host_name[MAX_HOSTNAME_LENGTH];
 	char svc_description[MAX_DESCRIPTION_LENGTH];
 	char plugin_output[MAX_PLUGINOUTPUT_LENGTH];
 	int total_packets = 0;
 	int16_t return_code;
 	u_int32_t calculated_crc32;
-	char *inputptr, *ptr1, *ptr2, *ptr3, *ptr4;
+	char *ptr1, *ptr2, *ptr3, *ptr4;
 
 	/* process command-line arguments */
 	result = process_arguments(argc, argv);

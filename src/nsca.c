@@ -1334,7 +1334,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 	else if (bytes_to_send < sizeof(send_packet)) {
 		syslog(
 			LOG_ERR,
-			"Only able to send %d of %d bytes of init packet to %s:%d",
+			"Only able to send %d of %lu bytes of init packet to %s:%d",
 			rc,
 			sizeof(send_packet),
 			conn_entry.ipaddr,
@@ -1704,7 +1704,7 @@ static int write_checkresult_file(
 	time(&current_time);
 	fprintf(checkresult_file_fp, "### NSCA Passive Check Result ###\n");
 	fprintf(checkresult_file_fp, "# Time: %s", ctime(&current_time));
-	fprintf(checkresult_file_fp, "file_time=%d\n\n", current_time);
+	fprintf(checkresult_file_fp, "file_time=%lu\n\n", current_time);
 	fprintf(
 		checkresult_file_fp,
 		"### %s Check Result ###\n",

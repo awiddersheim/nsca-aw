@@ -276,7 +276,7 @@ int main(int argc, char **argv) {
 		/* for some reason we didn't send all the bytes we were supposed to */
 		else if (bytes_to_send < sizeof(send_packet)) {
 			printf(
-				"Warning: Sent only %d of %d bytes to host\n",
+				"Warning: Sent only %d of %lu bytes to host\n",
 				rc,
 				sizeof(send_packet)
 			);
@@ -347,7 +347,7 @@ int read_init_packet(int sock) {
 	/* we couldn't read the correct amount of data, so bail out */
 	else if (bytes_to_recv != sizeof(receive_packet)) {
 		printf(
-			"Error: Init packet from server was too short (%d bytes received, %d expected)\n",
+			"Error: Init packet from server was too short (%d bytes received, %lu expected)\n",
 			bytes_to_recv,
 			sizeof(receive_packet)
 		);

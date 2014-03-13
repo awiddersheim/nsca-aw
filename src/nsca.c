@@ -1330,7 +1330,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 		return;
 	}
 
-	/* for some reason not all the data that should have beeen sent was sent */
+	/* for some reason not all the data that should have been sent was sent */
 	else if (bytes_to_send < sizeof(send_packet)) {
 		syslog(
 			LOG_ERR,

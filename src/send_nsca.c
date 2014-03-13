@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
 	/* try to connect to the host at the given port number */
 	result = my_tcp_connect(server_name, server_port, &sd);
 
-	/* we couldn't connect */
+	/* could not connect */
 	if (result != STATE_OK) {
 		printf("Error: Could not connect to host %s on port %d\n", server_name, server_port);
 		do_exit(STATE_CRITICAL);
@@ -157,7 +157,7 @@ int main(int argc, char **argv) {
 	printf("Got init packet from server\n");
 #endif
 
-	/* initialize encryption/decryption routines with the IV we received from the server */
+	/* initialize encryption/decryption routines with the IV received from the server */
 	if (encrypt_init(password, encryption_method, received_iv, &CI) != OK) {
 		printf(
 			"Error: Failed to initialize encryption libraries for method %d\n",
@@ -171,7 +171,7 @@ int main(int argc, char **argv) {
 	printf("Initialized encryption routines\n");
 #endif
 
-	/**** WE'RE CONNECTED AND READY TO SEND ****/
+	/**** CONNECTED AND READY TO SEND ****/
 
 	/* read all data from STDIN until there isn't anymore */
 	while(!feof(stdin)) {
@@ -182,7 +182,7 @@ int main(int argc, char **argv) {
 
 		int pos = 0;
 		while (c != 23) {
-			/* in case we don't terminate properly
+			/* in case program unable to terminate properly
 			 * or are in single-input mode
 			 */
 			if (c == -1)
@@ -235,7 +235,7 @@ int main(int argc, char **argv) {
 		svc_description[sizeof(svc_description)-1] = '\x0';
 		plugin_output[sizeof(plugin_output)-1] = '\x0';
 
-		/* increment count of packets we're sending */
+		/* increment count of packets being sent */
 		total_packets++;
 
 		/* clear the packet buffer */
@@ -244,7 +244,7 @@ int main(int argc, char **argv) {
 		/* fill the packet with semi-random data */
 		randomize_buffer((char *)&send_packet, sizeof(send_packet));
 
-		/* copy the data we want to send into the packet */
+		/* copy the data into the packet to be sent */
 		send_packet.packet_version = (int16_t)htons(NSCA_PACKET_VERSION_3);
 		send_packet.return_code = (int16_t)htons(return_code);
 		strcpy(&send_packet.host_name[0], host_name);
@@ -273,7 +273,7 @@ int main(int argc, char **argv) {
 			do_exit(STATE_UNKNOWN);
 		}
 
-		/* for some reason we didn't send all the bytes we were supposed to */
+		/* for some reason not all the data that should have been sent was sent */
 		else if (bytes_to_send < sizeof(send_packet)) {
 			printf(
 				"Warning: Sent only %d of %lu bytes to host\n",
@@ -344,7 +344,7 @@ int read_init_packet(int sock) {
 		return(ERROR);
 	}
 
-	/* we couldn't read the correct amount of data, so bail out */
+	/* coudl not read the correct amount of data, so bail out */
 	else if (bytes_to_recv != sizeof(receive_packet)) {
 		printf(
 			"Error: Init packet from server was too short (%d bytes received, %lu expected)\n",
@@ -471,7 +471,7 @@ int read_config_file(char *filename) {
 	/* open the config file for reading */
 	fp = fopen(filename, "r");
 
-	/* exit if we couldn't open the config file */
+	/* exit if config file could not be opened */
 	if (fp == NULL) {
 		printf("Could not open config file '%s' for reading.\n", filename);
 		return(ERROR);

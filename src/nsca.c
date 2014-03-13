@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
 		if (getcwd(config_file, sizeof(config_file)) == NULL) {
 			syslog(
 				LOG_ERR,
-				"Could not run getcwd() to read config file (%d: %s)",
+				"Could not getcwd() when reading config (%d: %s)",
 				errno,
 				strerror(errno)
 			);
@@ -2002,18 +2002,37 @@ static int write_pid_file(uid_t usr, gid_t grp) {
 	}
 
 	/* write new pid file */
-	if ((fd = open(pid_file, O_WRONLY | O_CREAT, 0644)) >=0 ) {
+	if ((fd = open(pid_file, O_WRONLY | O_CREAT, 0644)) >= 0) {
 		sprintf(pbuf, "%d\n", (int)getpid());
-		write(fd, pbuf, strlen(pbuf));
-		fchown(fd, usr, grp);
+		if (write(fd, pbuf, strlen(pbuf) < 0)) {
+			syslog(
+				LOG_ERR,
+				"Could not write() pidfile '%s' - check your privileges (%d: %s)",
+				pid_file,
+				errno,
+				strerror(errno)
+			);
+		}
+		if (fchown(fd, usr, grp) < 0) {
+			syslog(
+				LOG_ERR,
+				"Could not fchown() pidfile '%s' - check your privileges (%d: %s)",
+				pid_file,
+				errno,
+				strerror(errno)
+			);
+		}
 		close(fd);
 		wrote_pid_file = TRUE;
-	} else
+	} else {
 		syslog(
 			LOG_ERR,
-			"Cannot write to pidfile '%s' - check your privileges",
-			pid_file
+			"Could not open() pidfile '%s' - check your privileges (%d: %s)",
+			pid_file,
+			errno,
+			strerror(errno)
 		);
+	}
 
 	return(OK);
 }
@@ -2148,7 +2167,7 @@ void do_chroot(void) {
 		if (chdir(nsca_chroot) != 0) {
 			syslog(
 				LOG_ERR,
-				"Could not chdir into chroot directory (%d: %s)",
+				"Could not chdir() into chroot directory (%d: %s)",
 				errno,
 				strerror(errno)
 			);
@@ -2158,7 +2177,7 @@ void do_chroot(void) {
 		if (chroot(".") != 0) {
 			syslog(
 				LOG_ERR,
-				"Could not chroot (%d: %s)",
+				"Could not chroot() (%d: %s)",
 				errno,
 				strerror(errno)
 			);

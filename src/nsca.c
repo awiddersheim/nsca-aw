@@ -1513,6 +1513,9 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	strncpy(host_name, receive_packet.host_name, sizeof(host_name)-1);
 	host_name[sizeof(host_name)-1] = '\0';
 
+	/* check timestamp of packet */
+	packet_time=(time_t)ntohl(receive_packet.timestamp);
+	time(&current_time);
 	packet_age = (unsigned long)(current_time-packet_time);
 	if (debug == TRUE)
 		syslog(

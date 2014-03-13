@@ -464,7 +464,6 @@ void alarm_handler(int sig) {
 int read_config_file(char *filename) {
 	FILE *fp;
 	char input_buffer[MAX_INPUT_BUFFER];
-	char *temp_buffer;
 	char *varname;
 	char *varvalue;
 	int line;

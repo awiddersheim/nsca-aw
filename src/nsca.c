@@ -1631,7 +1631,6 @@ static int write_checkresult_file(
 	mode_t new_umask = 077;
 	mode_t old_umask;
 	time_t current_time;
-	char *output_file = NULL;
 	int checkresult_file_fd = -1;
 	char *checkresult_file = NULL;
 	char *checkresult_ok_file = NULL;

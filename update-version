@@ -3,10 +3,10 @@
 SHORTDATE=`date "+%m-%d-%Y"`
 
 # current version number
-CURRENTVERSION=2.9.1
+CURRENTVERSION=2.9.2
 
 # last date
-LASTDATE=01-27-2012
+LASTDATE=03-17-2014
 
 if [ "x$1" = "x" ]
 then
@@ -37,5 +37,5 @@ perl -i -p -e "s/PKG_REL_DATE=.*\"/PKG_REL_DATE=\"$SHORTDATE\"/;" configure.in
 perl -i -p -e "s/%define version .*/%define version $1/;" nsca.spec
 
 # update this file with version number and last date
-perl -i -p -e "s/^CURRENTVERSION=.*/CURRENTVERSION=$newversion/;" update-version
+perl -i -p -e "s/^CURRENTVERSION=.*/CURRENTVERSION=$1/;" update-version
 perl -i -p -e "s/^LASTDATE=.*/LASTDATE=$SHORTDATE/;" update-version

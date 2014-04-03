@@ -248,11 +248,11 @@ int sendall(int s, char *buf, int *len, int timeout) {
 	/* return number of bytes actually sent here */
 	*len = total;
 
-	/* return -1 on failure, 0 on success */
-	return n == -1 ? -1 : 0;
+	/* return -1 on failure or 0 on success */
+	return((n == -1) ? -1 : 0);
 }
 
-/* receives all data - modelled after sendall() */
+/* receive all data - modelled after sendall() */
 int recvall(int s, char *buf, int *len, int timeout) {
 	int total = 0;
 	int bytesleft = *len;
@@ -297,9 +297,9 @@ int recvall(int s, char *buf, int *len, int timeout) {
 		bytesleft -= n;
 	}
 
-	/* return number of bytes actually received here */
+	/* return number of bytes actually received */
 	*len = total;
 
-	/* return <=0 on failure, bytes received on success */
-	return(n <= 0) ? n : total;
+	/* return <= 0 on failure or bytes received on success */
+	return((n <= 0) ? n : total);
 }

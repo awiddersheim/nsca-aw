@@ -892,53 +892,66 @@ static int find_whand(int fd) {
 static void handle_events(void) {
 	void (*handler)(struct conn_entry, void *);
 	void *data;
-	int i, hand;
+	int i;
+	int hand;
+	int ret;
 
 	/* bail out if necessary */
 	if (sigrestart == TRUE || sigshutdown == TRUE)
 		return;
 
 	/* poll with a timeout */
-	poll(pfds, npfds, 1000);
+	ret = poll(pfds, npfds, 1000);
 
-	/* loop through each fd being polled */
-	for (i = 0; i < npfds; i++) {
-		if ((pfds[i].events&POLLIN) && (pfds[i].revents&(POLLIN|POLLERR|POLLHUP|POLLNVAL))) {
-			pfds[i].events&=~POLLIN;
-			hand = find_rhand(pfds[i].fd);
-			if (hand == ERROR) {
-				syslog(
-					LOG_ERR,
-					"Could not find rhand (%d), handler stack corrupt - aborting",
-					pfds[i].fd
-				);
-				do_exit(STATE_CRITICAL);
+	/* check result of poll() */
+	if (ret < 0 && errno != EINTR) {
+		syslog(
+			LOG_ERR,
+			"Failure calling poll() in handle_events() (%d: %s)",
+			errno,
+			strerror(errno)
+		);
+		do_exit(STATE_CRITICAL);
+	} else if (ret > 0) {
+		/* loop through each fd being polled */
+		for (i = 0; i < npfds; i++) {
+			if ((pfds[i].events&POLLIN) && (pfds[i].revents&(POLLIN|POLLERR|POLLHUP|POLLNVAL))) {
+				pfds[i].events&=~POLLIN;
+				hand = find_rhand(pfds[i].fd);
+				if (hand == ERROR) {
+					syslog(
+						LOG_ERR,
+						"Could not find rhand (%d), handler stack corrupt - aborting",
+						pfds[i].fd
+					);
+					do_exit(STATE_CRITICAL);
+				}
+				handler = rhand[hand].handler;
+				data = rhand[hand].data;
+				rhand[hand].handler = NULL;
+				rhand[hand].data = NULL;
+				rhand[hand].alive = FALSE;
+				handler(rhand[hand].conn_entry, data);
 			}
-			handler = rhand[hand].handler;
-			data = rhand[hand].data;
-			rhand[hand].handler = NULL;
-			rhand[hand].data = NULL;
-			rhand[hand].alive = FALSE;
-			handler(rhand[hand].conn_entry, data);
-		}
 
-		if ((pfds[i].events&POLLOUT) && (pfds[i].revents&(POLLOUT|POLLERR|POLLHUP|POLLNVAL))) {
-			pfds[i].events&=~POLLOUT;
-			hand = find_whand(pfds[i].fd);
-			if (hand == ERROR) {
-				syslog(
-					LOG_ERR,
-					"Could not find whand (%d), handler stack corrupt - aborting",
-					pfds[i].fd
-				);
-				do_exit(STATE_CRITICAL);
+			if ((pfds[i].events&POLLOUT) && (pfds[i].revents&(POLLOUT|POLLERR|POLLHUP|POLLNVAL))) {
+				pfds[i].events&=~POLLOUT;
+				hand = find_whand(pfds[i].fd);
+				if (hand == ERROR) {
+					syslog(
+						LOG_ERR,
+						"Could not find whand (%d), handler stack corrupt - aborting",
+						pfds[i].fd
+					);
+					do_exit(STATE_CRITICAL);
+				}
+				handler = whand[hand].handler;
+				data = whand[hand].data;
+				whand[hand].handler = NULL;
+				whand[hand].data = NULL;
+				whand[hand].alive = FALSE;
+				handler(whand[hand].conn_entry, data);
 			}
-			handler = whand[hand].handler;
-			data = whand[hand].data;
-			whand[hand].handler = NULL;
-			whand[hand].data = NULL;
-			whand[hand].alive = FALSE;
-			handler(whand[hand].conn_entry, data);
 		}
 	}
 

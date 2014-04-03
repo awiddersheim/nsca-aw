@@ -1079,8 +1079,18 @@ static void wait_for_connections(void) {
 		);
 
 	/* socket should be non-blocking for mult-process daemon */
-	if (mode == MULTI_PROCESS_DAEMON)
-		fcntl(sock, F_SETFL, O_NONBLOCK);
+	if (mode == MULTI_PROCESS_DAEMON) {
+		if (fcntl(sock, F_SETFL, O_NONBLOCK) < 0) {
+			syslog(
+				LOG_ERR,
+				"Could not set socket into non-blocking mode (%d: %s)",
+				errno,
+				strerror(errno)
+			);
+			close(sock);
+			do_exit(STATE_CRITICAL);
+		}
+	}
 
 	/* create conn_entry */
 	conn_entry.sock = sock;

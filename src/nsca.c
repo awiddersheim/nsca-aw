@@ -1033,7 +1033,7 @@ static void wait_for_connections(void) {
 	myname.sin_port = htons(server_port);
 	bzero(&myname.sin_zero, 8);
 
-	/* what address to bind to? */
+	/* what address to bind to */
 	if (!strlen(server_address))
 		myname.sin_addr.s_addr = INADDR_ANY;
 	else if (!my_inet_aton(server_address, &myname.sin_addr)) {
@@ -1169,7 +1169,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 		}
 	}
 
-	/* hey, there was an error... */
+	/* there was an error */
 	if (new_sd < 0) {
 		/* log error to syslog facility */
 		syslog(

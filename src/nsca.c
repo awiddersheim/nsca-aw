@@ -34,6 +34,7 @@ static int aggregate_writes = FALSE;
 static int decryption_method = ENCRYPT_XOR;
 static int append_to_file = FALSE;
 static unsigned long max_packet_age = 30;
+static unsigned long max_packet_age_setting = 900;
 
 char *nsca_user = NULL;
 char *nsca_group = NULL;
@@ -571,10 +572,11 @@ static int read_config_file(char *filename) {
 
 		else if (!strcmp(varname, "max_packet_age")) {
 			max_packet_age = strtoul(varvalue, NULL, 10);
-			if (max_packet_age > 900) {
+			if (max_packet_age > max_packet_age_setting) {
 				syslog(
 					LOG_ERR,
-					"Max packet age cannot be greater than 15 minutes (900 seconds)"
+					"Max packet age cannot be greater than %lu second(s)",
+					max_packet_age_setting
 				);
 				return(ERROR);
 			}
@@ -946,7 +948,7 @@ static void handle_events(void) {
 			if (debug == TRUE)
 				syslog(
 					LOG_INFO,
-					"Connection from %s:%d timed out during rhand after %d seconds",
+					"Connection from %s:%d timed out during rhand after %d second(s)",
 					rhand[i].conn_entry.ipaddr,
 					rhand[i].conn_entry.port,
 					socket_timeout
@@ -962,7 +964,7 @@ static void handle_events(void) {
 			if (debug == TRUE)
 				syslog(
 					LOG_INFO,
-					"Connection from %s:%d timed out during whand after %d seconds",
+					"Connection from %s:%d timed out during whand after %d second(s)",
 					whand[i].conn_entry.ipaddr,
 					whand[i].conn_entry.port,
 					socket_timeout
@@ -1324,7 +1326,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 		if (rc == TIMEOUT_ERROR)
 			syslog(
 				LOG_ERR,
-				"Connection from %s:%d timed out during send() after %d seconds",
+				"Connection from %s:%d timed out during send() after %d second(s)",
 				conn_entry.ipaddr,
 				conn_entry.port,
 				socket_timeout
@@ -1426,7 +1428,7 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 				if (rc == TIMEOUT_ERROR)
 					syslog(
 						LOG_ERR,
-						"Connection from %s:%d timed out during recv() after %d seconds",
+						"Connection from %s:%d timed out during recv() after %d second(s)",
 						conn_entry.ipaddr,
 						conn_entry.port,
 						socket_timeout

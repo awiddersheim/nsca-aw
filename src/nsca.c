@@ -958,15 +958,13 @@ static void handle_events(void) {
 	/* loop through each rhand looking for connections that have timed out */
 	for (i = 1; i < maxrhand; i++) {
 		if (rhand[i].alive == TRUE && (time(NULL) - rhand[i].keepalive) > socket_timeout) {
-			if (debug == TRUE)
-				syslog(
-					LOG_INFO,
-					"Connection from %s:%d timed out during rhand after %d second(s)",
-					rhand[i].conn_entry.ipaddr,
-					rhand[i].conn_entry.port,
-					socket_timeout
-				);
-
+			syslog(
+				LOG_INFO,
+				"Connection from %s:%d timed out during rhand after %d second(s)",
+				rhand[i].conn_entry.ipaddr,
+				rhand[i].conn_entry.port,
+				socket_timeout
+			);
 			close(rhand[i].conn_entry.sock);
 		}
 	}
@@ -974,15 +972,13 @@ static void handle_events(void) {
 	/* loop through each whand looking for connections that have timed out */
 	for (i = 1; i < maxwhand; i++) {
 		if (whand[i].alive == TRUE && (time(NULL) - whand[i].keepalive) > socket_timeout) {
-			if (debug == TRUE)
-				syslog(
-					LOG_INFO,
-					"Connection from %s:%d timed out during whand after %d second(s)",
-					whand[i].conn_entry.ipaddr,
-					whand[i].conn_entry.port,
-					socket_timeout
-				);
-
+			syslog(
+				LOG_INFO,
+				"Connection from %s:%d timed out during whand after %d second(s)",
+				whand[i].conn_entry.ipaddr,
+				whand[i].conn_entry.port,
+				socket_timeout
+			);
 			close(whand[i].conn_entry.sock);
 		}
 	}

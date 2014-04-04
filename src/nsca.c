@@ -921,7 +921,7 @@ static void handle_events(void) {
 				if (hand == ERROR) {
 					syslog(
 						LOG_ERR,
-						"Could not find rhand (%d), handler stack corrupt - aborting",
+						"Could not find rhand (%d), handler stack corrupt",
 						pfds[i].fd
 					);
 					do_exit(STATE_CRITICAL);
@@ -940,7 +940,7 @@ static void handle_events(void) {
 				if (hand == ERROR) {
 					syslog(
 						LOG_ERR,
-						"Could not find whand (%d), handler stack corrupt - aborting",
+						"Could not find whand (%d), handler stack corrupt",
 						pfds[i].fd
 					);
 					do_exit(STATE_CRITICAL);
@@ -1477,7 +1477,7 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	if (bytes_to_recv != packet_length) {
 		syslog(
 			LOG_ERR,
-			"Data sent from %s:%d was too short (%d < %d), aborting",
+			"Data sent from %s:%d was too short (%d < %d)",
 			conn_entry.ipaddr,
 			conn_entry.port,
 			bytes_to_recv,

@@ -1443,34 +1443,37 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 
 	/* recv() error or client disconnect */
 	if (rc <= 0) {
-		if (OLD_PACKET_LENGTH == bytes_to_recv) {
-			packet_length = OLD_PACKET_LENGTH;
-			plugin_length = OLD_PLUGINOUTPUT_LENGTH;
-		} else {
-			if (debug == TRUE) {
-				if (rc == TIMEOUT_ERROR)
-					syslog(
-						LOG_ERR,
-						"Connection from %s:%d timed out during recv() after %d second(s)",
-						conn_entry.ipaddr,
-						conn_entry.port,
-						socket_timeout
-					);
-				else
-					syslog(
-						LOG_INFO,
-						"End of connection from %s:%d",
-						conn_entry.ipaddr,
-						conn_entry.port
-					);
-			}
-			encrypt_cleanup(decryption_method, CI);
-			close(conn_entry.sock);
-			if (mode == SINGLE_PROCESS_DAEMON)
-				return;
+		if (debug == TRUE) {
+			if (rc == TIMEOUT_ERROR)
+				syslog(
+					LOG_ERR,
+					"Connection from %s:%d timed out during recv() after %d second(s)",
+					conn_entry.ipaddr,
+					conn_entry.port,
+					socket_timeout
+				);
 			else
-				do_exit(STATE_OK);
+				syslog(
+					LOG_INFO,
+					"End of connection from %s:%d",
+					conn_entry.ipaddr,
+					conn_entry.port
+				);
 		}
+		encrypt_cleanup(decryption_method, CI);
+		close(conn_entry.sock);
+		if (mode == SINGLE_PROCESS_DAEMON)
+			return;
+		else
+			do_exit(STATE_OK);
+	}
+
+	/* allow for older clients using a smaller packet size
+	 * to talk to newer servers
+	 */
+	if (OLD_PACKET_LENGTH == bytes_to_recv) {
+		packet_length = OLD_PACKET_LENGTH;
+		plugin_length = OLD_PLUGINOUTPUT_LENGTH;
 	}
 
 	/* could not read the correct amount of data, so bail out */

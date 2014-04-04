@@ -1348,11 +1348,20 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 	if (rc < 0) {
 		if (rc == TIMEOUT_ERROR)
 			syslog(
-				LOG_ERR,
+				LOG_INFO,
 				"Connection from %s:%d timed out during send() after %d second(s)",
 				conn_entry.ipaddr,
 				conn_entry.port,
 				socket_timeout
+			);
+		else if (errno != EAGAIN && errno != EINTR)
+			syslog(
+				LOG_ERR,
+				"Connection from %s:%d failed during send() (%d: %s)",
+				conn_entry.ipaddr,
+				conn_entry.port,
+				errno,
+				strerror(errno)
 			);
 		else
 			syslog(
@@ -1443,22 +1452,32 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 
 	/* recv() error or client disconnect */
 	if (rc <= 0) {
-		if (debug == TRUE) {
-			if (rc == TIMEOUT_ERROR)
-				syslog(
-					LOG_ERR,
-					"Connection from %s:%d timed out during recv() after %d second(s)",
-					conn_entry.ipaddr,
-					conn_entry.port,
-					socket_timeout
-				);
-			else
+		if (rc == TIMEOUT_ERROR)
+			syslog(
+				LOG_INFO,
+				"Connection from %s:%d timed out during recv() after %d second(s)",
+				conn_entry.ipaddr,
+				conn_entry.port,
+				socket_timeout
+			);
+		else if (rc < 0 && errno != EAGAIN && errno != EINTR)
+			syslog(
+				LOG_ERR,
+				"Connection from %s:%d failed during recv() (%d: %s)",
+				conn_entry.ipaddr,
+				conn_entry.port,
+				errno,
+				strerror(errno)
+			);
+		else {
+			if (debug == TRUE) {
 				syslog(
 					LOG_INFO,
 					"End of connection from %s:%d",
 					conn_entry.ipaddr,
 					conn_entry.port
 				);
+			}
 		}
 		encrypt_cleanup(decryption_method, CI);
 		close(conn_entry.sock);

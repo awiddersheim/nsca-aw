@@ -1462,10 +1462,9 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 		}
 		encrypt_cleanup(decryption_method, CI);
 		close(conn_entry.sock);
-		if (mode == SINGLE_PROCESS_DAEMON)
-			return;
-		else
+		if (mode == MULTI_PROCESS_DAEMON)
 			do_exit(STATE_OK);
+		return;
 	}
 
 	/* allow for older clients using a smaller packet size
@@ -1488,10 +1487,9 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 		);
 		encrypt_cleanup(decryption_method, CI);
 		close(conn_entry.sock);
-		if (mode == SINGLE_PROCESS_DAEMON)
-			return;
-		else
+		if (mode == MULTI_PROCESS_DAEMON)
 			do_exit(STATE_CRITICAL);
+		return;
 	}
 
 	/* if in single-process, need to set things up so the
@@ -1524,10 +1522,9 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 
 		/* return */
 		close(conn_entry.sock);
-		if (mode == SINGLE_PROCESS_DAEMON)
-			return;
-		else
-			do_exit(STATE_OK);
+		if (mode == MULTI_PROCESS_DAEMON)
+			do_exit(STATE_CRITICAL);
+		return;
 	}
 
 	/* check the crc 32 value */
@@ -1544,10 +1541,9 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 
 		/* return */
 		close(conn_entry.sock);
-		if (mode == SINGLE_PROCESS_DAEMON)
-			return;
-		else
-			do_exit(STATE_OK);
+		if (mode == MULTI_PROCESS_DAEMON)
+			do_exit(STATE_CRITICAL);
+		return;
 	}
 
 	/* host name */
@@ -1580,10 +1576,9 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 			packet_age
 		);
 		close(conn_entry.sock);
-		if (mode == SINGLE_PROCESS_DAEMON)
-			return;
-		else
-			do_exit(STATE_OK);
+		if (mode == MULTI_PROCESS_DAEMON)
+			do_exit(STATE_CRITICAL);
+		return;
 	}
 
 	/**** GET THE SERVICE CHECK INFORMATION ****/

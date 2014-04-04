@@ -915,7 +915,7 @@ static void handle_events(void) {
 	} else if (ret > 0) {
 		/* loop through each fd being polled */
 		for (i = 0; i < npfds; i++) {
-			if ((pfds[i].events&POLLIN) && (pfds[i].revents&(POLLIN|POLLERR|POLLHUP|POLLNVAL))) {
+			if (pfds[i].events&POLLIN && pfds[i].revents&(POLLIN|POLLERR|POLLHUP|POLLNVAL)) {
 				pfds[i].events&=~POLLIN;
 				hand = find_rhand(pfds[i].fd);
 				if (hand == ERROR) {
@@ -934,7 +934,7 @@ static void handle_events(void) {
 				handler(rhand[hand].conn_entry, data);
 			}
 
-			if ((pfds[i].events&POLLOUT) && (pfds[i].revents&(POLLOUT|POLLERR|POLLHUP|POLLNVAL))) {
+			if (pfds[i].events&POLLOUT && pfds[i].revents&(POLLOUT|POLLERR|POLLHUP|POLLNVAL)) {
 				pfds[i].events&=~POLLOUT;
 				hand = find_whand(pfds[i].fd);
 				if (hand == ERROR) {

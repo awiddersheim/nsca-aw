@@ -895,6 +895,7 @@ static void handle_events(void) {
 	int i;
 	int hand;
 	int ret;
+	int alive;
 
 	/* bail out if necessary */
 	if (sigrestart == TRUE || sigshutdown == TRUE)
@@ -917,6 +918,7 @@ static void handle_events(void) {
 		for (i = 0; i < npfds; i++) {
 			if (pfds[i].events&POLLIN && pfds[i].revents&(POLLIN|POLLERR|POLLHUP|POLLNVAL)) {
 				pfds[i].events&=~POLLIN;
+				pfds[i].revents = 0;
 				hand = find_rhand(pfds[i].fd);
 				if (hand == ERROR) {
 					syslog(
@@ -928,14 +930,17 @@ static void handle_events(void) {
 				}
 				handler = rhand[hand].handler;
 				data = rhand[hand].data;
+				alive = rhand[hand].alive;
 				rhand[hand].handler = NULL;
 				rhand[hand].data = NULL;
 				rhand[hand].alive = FALSE;
-				handler(rhand[hand].conn_entry, data);
+				if (alive == TRUE)
+					handler(rhand[hand].conn_entry, data);
 			}
 
 			if (pfds[i].events&POLLOUT && pfds[i].revents&(POLLOUT|POLLERR|POLLHUP|POLLNVAL)) {
 				pfds[i].events&=~POLLOUT;
+				pfds[i].revents = 0;
 				hand = find_whand(pfds[i].fd);
 				if (hand == ERROR) {
 					syslog(
@@ -947,10 +952,12 @@ static void handle_events(void) {
 				}
 				handler = whand[hand].handler;
 				data = whand[hand].data;
+				alive = whand[hand].alive;
 				whand[hand].handler = NULL;
 				whand[hand].data = NULL;
 				whand[hand].alive = FALSE;
-				handler(whand[hand].conn_entry, data);
+				if (alive == TRUE)
+					handler(whand[hand].conn_entry, data);
 			}
 		}
 	}
@@ -965,6 +972,7 @@ static void handle_events(void) {
 				rhand[i].conn_entry.port,
 				socket_timeout
 			);
+			rhand[i].alive = FALSE;
 			close(rhand[i].conn_entry.sock);
 		}
 	}
@@ -979,6 +987,7 @@ static void handle_events(void) {
 				whand[i].conn_entry.port,
 				socket_timeout
 			);
+			whand[i].alive = FALSE;
 			close(whand[i].conn_entry.sock);
 		}
 	}

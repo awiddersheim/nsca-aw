@@ -960,6 +960,15 @@ static void handle_events(void) {
 					handler(whand[hand].conn_entry, data);
 			}
 		}
+
+		/* remove any fds that do not need to be polled any longer */
+		for (i = 0; i < npfds; i++) {
+			if (pfds[i].events == 0) {
+				npfds--;
+				pfds[i].fd = pfds[npfds].fd;
+				pfds[i].events = pfds[npfds].events;
+			}
+		}
 	}
 
 	/* loop through each rhand looking for connections that have timed out */
@@ -989,14 +998,6 @@ static void handle_events(void) {
 			);
 			whand[i].alive = FALSE;
 			close(whand[i].conn_entry.sock);
-		}
-	}
-
-	for (i = 0; i < npfds; i++) {
-		if (pfds[i].events == 0) {
-			npfds--;
-			pfds[i].fd = pfds[npfds].fd;
-			pfds[i].events = pfds[npfds].events;
 		}
 	}
 

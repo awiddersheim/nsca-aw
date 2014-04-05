@@ -360,7 +360,7 @@ static int read_config_file(char *filename) {
 		return(ERROR);
 	}
 
-	line=0;
+	line = 0;
 	while(fgets(input_buffer, MAX_INPUT_BUFFER-1, fp)) {
 		line++;
 
@@ -1167,7 +1167,6 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 
 		/* handle the error */
 		else {
-
 			/* bail out if necessary */
 			if (sigrestart == TRUE || sigshutdown == TRUE)
 				return;
@@ -1266,7 +1265,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 	/* handle the connection */
 	if (mode == SINGLE_PROCESS_DAEMON) {
 		/* mark the connection as ready to be handled */
-		if(register_write_handler(new_conn_entry, handle_connection, NULL) == ERROR) {
+		if (register_write_handler(new_conn_entry, handle_connection, NULL) == ERROR) {
 			syslog(
 				LOG_ERR,
 				"Could not setup write handler for %s:%d in accept_connection()",

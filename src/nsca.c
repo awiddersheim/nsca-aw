@@ -1137,7 +1137,7 @@ static void wait_for_connections(void) {
 	return;
 }
 
-static void accept_connection(struct conn_entry conn_entry, void *unused){
+static void accept_connection(struct conn_entry conn_entry, void *unused) {
 	int new_sd;
 	pid_t pid;
 	struct sockaddr_in addr;
@@ -1197,9 +1197,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused){
 
 		/* close socket prior to exiting */
 		close(conn_entry.sock);
-		if (mode == MULTI_PROCESS_DAEMON)
-			do_exit(STATE_CRITICAL);
-		return;
+		do_exit(STATE_CRITICAL);
 	}
 
 #ifdef HAVE_LIBWRAP

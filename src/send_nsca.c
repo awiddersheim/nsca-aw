@@ -263,7 +263,7 @@ int main(int argc, char **argv) {
 		encrypt_buffer((char *)&send_packet, sizeof(send_packet), password, encryption_method, CI);
 
 		/* send the packet */
-		bytes_to_send=sizeof(send_packet);
+		bytes_to_send = sizeof(send_packet);
 		rc = sendall(sd,(char *)&send_packet, &bytes_to_send, socket_timeout);
 
 		/* there was an error sending the packet */

@@ -35,19 +35,19 @@ static void generate_transmitted_iv(char *transmitted_iv);
 
 static unsigned long crc32_table[256];
 #ifdef HAVE_LIBMCRYPT
-static volatile sig_atomic_t mcrypt_initialized=FALSE;
+static volatile sig_atomic_t mcrypt_initialized = FALSE;
 #endif
 
 /* escapes newlines in a string, snagged from nagios-3.0.6/base/utils.c */
 char *escape_newlines(char *rawbuf) {
-	char *newbuf=NULL;
+	char *newbuf = NULL;
 	register int x, y;
 
 	if (rawbuf == NULL)
 		return(NULL);
 
 	/* allocate enough memory to escape all chars if necessary */
-	if ((newbuf=malloc((strlen(rawbuf)*2)+1)) == NULL)
+	if ((newbuf = malloc((strlen(rawbuf)*2)+1)) == NULL)
 		return(NULL);
 
 	for(x = 0, y = 0; rawbuf[x] != (char)'\x0'; x++) {
@@ -99,7 +99,7 @@ unsigned long calculate_crc32(char *buffer, int buffer_size) {
 
 	for(current_index = 0; current_index < buffer_size; current_index++) {
 		this_char = (int)buffer[current_index];
-		crc= ((crc>>8) & 0x00FFFFFF) ^ crc32_table[(crc ^ this_char) & 0xFF];
+		crc = ((crc>>8) & 0x00FFFFFF) ^ crc32_table[(crc ^ this_char) & 0xFF];
 	}
 
 	return(crc ^ 0xFFFFFFFF);

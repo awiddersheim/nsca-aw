@@ -1398,7 +1398,7 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 	}
 
 	/* open the command file if aggregating writes */
-	if (aggregate_writes==TRUE) {
+	if (aggregate_writes == TRUE) {
 		if (open_command_file(conn_entry) == ERROR) {
 			encrypt_cleanup(decryption_method, CI);
 			close(conn_entry.sock);
@@ -1443,8 +1443,8 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	char host_name[MAX_HOSTNAME_LENGTH];
 	char svc_description[MAX_DESCRIPTION_LENGTH];
 	char plugin_output[MAX_PLUGINOUTPUT_LENGTH];
-	int packet_length=sizeof(receive_packet);
-	int plugin_length=MAX_PLUGINOUTPUT_LENGTH;
+	int packet_length = sizeof(receive_packet);
+	int plugin_length = MAX_PLUGINOUTPUT_LENGTH;
 	CI = data;
 
 	/* process all data from the client */
@@ -1573,7 +1573,7 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 	host_name[sizeof(host_name)-1] = '\0';
 
 	/* check timestamp of packet */
-	packet_time=(time_t)ntohl(receive_packet.timestamp);
+	packet_time = (time_t)ntohl(receive_packet.timestamp);
 	time(&current_time);
 	packet_age = (unsigned long)(current_time-packet_time);
 	if (debug == TRUE)
@@ -1940,7 +1940,7 @@ static int open_command_file(struct conn_entry conn_entry) {
 				LOG_ERR,
 				"Could not open command file '%s' for %s for %s:%d",
 				command_file,
-				(append_to_file==TRUE) ? "appending" : "writing",
+				(append_to_file == TRUE) ? "appending" : "writing",
 				conn_entry.ipaddr,
 				conn_entry.port
 			);

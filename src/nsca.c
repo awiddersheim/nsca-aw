@@ -1455,46 +1455,46 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 
 	/* recv() error or client disconnect */
 	if (rc <= 0) {
-		if (rc == TIMEOUT_ERROR)
-			syslog(
-				LOG_INFO,
-				"Connection from %s:%d timed out during recv() after %d second(s)",
-				conn_entry.ipaddr,
-				conn_entry.port,
-				socket_timeout
-			);
-		else if (rc < 0 && errno != EAGAIN && errno != EINTR)
-			syslog(
-				LOG_ERR,
-				"Connection from %s:%d failed during recv() (%d: %s)",
-				conn_entry.ipaddr,
-				conn_entry.port,
-				errno,
-				strerror(errno)
-			);
-		else {
-			if (debug == TRUE) {
+		/* allow for older clients using a smaller
+		 * packet size to talk to newer servers
+		 */
+		if (OLD_PACKET_LENGTH == bytes_to_recv) {
+			packet_length = OLD_PACKET_LENGTH;
+			plugin_length = OLD_PLUGINOUTPUT_LENGTH;
+		} else {
+			if (rc == TIMEOUT_ERROR)
 				syslog(
 					LOG_INFO,
-					"End of connection from %s:%d",
+					"Connection from %s:%d timed out during recv() after %d second(s)",
 					conn_entry.ipaddr,
-					conn_entry.port
+					conn_entry.port,
+					socket_timeout
 				);
+			else if (rc < 0 && errno != EAGAIN && errno != EINTR)
+				syslog(
+					LOG_ERR,
+					"Connection from %s:%d failed during recv() (%d: %s)",
+					conn_entry.ipaddr,
+					conn_entry.port,
+					errno,
+					strerror(errno)
+				);
+			else {
+				if (debug == TRUE) {
+					syslog(
+						LOG_INFO,
+						"End of connection from %s:%d",
+						conn_entry.ipaddr,
+						conn_entry.port
+					);
+				}
 			}
+			encrypt_cleanup(decryption_method, CI);
+			close(conn_entry.sock);
+			if (mode == MULTI_PROCESS_DAEMON)
+				do_exit(STATE_OK);
+			return;
 		}
-		encrypt_cleanup(decryption_method, CI);
-		close(conn_entry.sock);
-		if (mode == MULTI_PROCESS_DAEMON)
-			do_exit(STATE_OK);
-		return;
-	}
-
-	/* allow for older clients using a smaller packet size
-	 * to talk to newer servers
-	 */
-	if (OLD_PACKET_LENGTH == bytes_to_recv) {
-		packet_length = OLD_PACKET_LENGTH;
-		plugin_length = OLD_PLUGINOUTPUT_LENGTH;
 	}
 
 	/* could not read the correct amount of data, so bail out */

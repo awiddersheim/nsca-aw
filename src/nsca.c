@@ -1514,22 +1514,6 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 		return;
 	}
 
-	/* if in single-process, need to set things up so the
-	 * next packet can be handled after this one
-	 */
-	if (mode == SINGLE_PROCESS_DAEMON)
-		if (register_read_handler(conn_entry, handle_connection_read, (void *)CI) == ERROR) {
-			syslog(
-				LOG_ERR,
-				"Could not setup read handler for %s:%d in handle_connection_read()",
-				conn_entry.ipaddr,
-				conn_entry.sock
-			);
-			encrypt_cleanup(decryption_method, CI);
-			close(conn_entry.sock);
-			return;
-		}
-
 	/* decrypt the packet */
 	decrypt_buffer((char *)&receive_packet, packet_length, password, decryption_method, CI);
 
@@ -1665,6 +1649,25 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 			plugin_output,
 			time(NULL)
 		);
+
+	/* if in single-process, need to set things up so the
+	 * next packet can be handled after this one
+	 * this must be done at the very end to work properly
+	 * should there happen to be any errors that occur
+	 */
+	if (mode == SINGLE_PROCESS_DAEMON) {
+		if (register_read_handler(conn_entry, handle_connection_read, (void *)CI) == ERROR) {
+			syslog(
+				LOG_ERR,
+				"Could not setup read handler for %s:%d in handle_connection_read()",
+				conn_entry.ipaddr,
+				conn_entry.sock
+			);
+			encrypt_cleanup(decryption_method, CI);
+			close(conn_entry.sock);
+			return;
+		}
+	}
 
 	return;
 }

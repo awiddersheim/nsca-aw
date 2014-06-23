@@ -1140,6 +1140,7 @@ static void wait_for_connections(void) {
 
 static void accept_connection(struct conn_entry conn_entry, void *unused) {
 	int new_sd;
+	int flags;
 	pid_t pid;
 	struct sockaddr_in addr;
 	socklen_t addrlen;
@@ -1261,6 +1262,37 @@ static void accept_connection(struct conn_entry conn_entry, void *unused) {
 			new_conn_entry.port
 		);
 
+	/* socket should be non-blocking */
+	if ((flags = fcntl(new_conn_entry.sock, F_GETFL, 0)) < 0) {
+		syslog(
+			LOG_ERR,
+			"Could not get flags of socket %s:%d (%d: %s)",
+			new_conn_entry.ipaddr,
+			new_conn_entry.port,
+			errno,
+			strerror(errno)
+		);
+		close(new_conn_entry.sock);
+		if (mode == MULTI_PROCESS_DAEMON)
+			do_exit(STATE_CRITICAL);
+		return;
+	}
+
+	if (fcntl(new_conn_entry.sock, F_SETFL, flags|O_NONBLOCK) < 0) {
+		syslog(
+			LOG_ERR,
+			"Could not set flags of socket %s:%d (%d: %s)",
+			new_conn_entry.ipaddr,
+			new_conn_entry.port,
+			errno,
+			strerror(errno)
+		);
+		close(new_conn_entry.sock);
+		if (mode == MULTI_PROCESS_DAEMON)
+			do_exit(STATE_CRITICAL);
+		return;
+	}
+
 	/* handle the connection */
 	if (mode == SINGLE_PROCESS_DAEMON) {
 		/* mark the connection as ready to be handled */
@@ -1286,7 +1318,6 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 	init_packet send_packet;
 	int bytes_to_send;
 	int rc;
-	int flags;
 	time_t packet_send_time;
 	struct crypt_instance *CI;
 
@@ -1298,37 +1329,6 @@ static void handle_connection(struct conn_entry conn_entry, void *data) {
 			conn_entry.ipaddr,
 			conn_entry.port
 		);
-
-	/* socket should be non-blocking */
-	if ((flags = fcntl(conn_entry.sock, F_GETFL, 0)) < 0) {
-		syslog(
-			LOG_ERR,
-			"Could not get flags of socket %s:%d (%d: %s)",
-			conn_entry.ipaddr,
-			conn_entry.port,
-			errno,
-			strerror(errno)
-		);
-		close(conn_entry.sock);
-		if (mode == MULTI_PROCESS_DAEMON)
-			do_exit(STATE_CRITICAL);
-		return;
-	}
-
-	if (fcntl(conn_entry.sock, F_SETFL, flags|O_NONBLOCK) < 0) {
-		syslog(
-			LOG_ERR,
-			"Could not set flags of socket %s:%d (%d: %s)",
-			conn_entry.ipaddr,
-			conn_entry.port,
-			errno,
-			strerror(errno)
-		);
-		close(conn_entry.sock);
-		if (mode == MULTI_PROCESS_DAEMON)
-			do_exit(STATE_CRITICAL);
-		return;
-	}
 
 	/* initialize encryption/decryption routines (server generates the IV to use and send to the client) */
 	if (encrypt_init(password, decryption_method, NULL, &CI) != OK) {

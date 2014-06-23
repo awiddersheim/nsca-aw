@@ -1663,7 +1663,6 @@ static void handle_connection_read(struct conn_entry conn_entry, void *data) {
 				conn_entry.ipaddr,
 				conn_entry.sock
 			);
-			encrypt_cleanup(decryption_method, CI);
 			close(conn_entry.sock);
 			return;
 		}

@@ -2,6 +2,15 @@
 NSCA Changelog
 **************
 
+2.9.3 - 06/23/2014
+------------------
+- Fixed potential deadlocks
+- Style fixes to code that help fix it's readability
+- Always log timeout messages
+- Improved error logging for send() and recv() calls
+- Added error checking to fcntl() call in Multi process mode
+- Improved performance of handle_events()
+
 2.9.2 - 03/17/2014
 ------------------
 - Fixed memory leaks

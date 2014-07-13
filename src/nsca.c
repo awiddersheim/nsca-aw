@@ -1052,7 +1052,7 @@ static void wait_for_connections(void) {
 	}
 
 
-	/* bind the address to the Internet socket */
+	/* bind address to socket */
 	if (bind(sock, (struct sockaddr *)&myname, sizeof(myname)) < 0) {
 		syslog(
 			LOG_ERR,
@@ -1076,13 +1076,12 @@ static void wait_for_connections(void) {
 
 	/* log info to syslog facility */
 	syslog(LOG_INFO, "Starting up daemon");
-
-	if (debug == TRUE)
-		syslog(
-			LOG_INFO,
-			"Listening for connections on port %d",
-			htons(myname.sin_port)
-		);
+	syslog(
+		LOG_INFO,
+		"Listening for connections on %s:%d",
+		inet_ntoa(myname.sin_addr),
+		htons(myname.sin_port)
+	);
 
 	/* socket should be non-blocking for mult-process daemon */
 	if (mode == MULTI_PROCESS_DAEMON) {
@@ -1102,7 +1101,7 @@ static void wait_for_connections(void) {
 	conn_entry.sock = sock;
 	strncpy(
 		conn_entry.ipaddr,
-		server_address,
+		inet_ntoa(myname.sin_addr),
 		IPv4_ADDRESS_SIZE
 	);
 	conn_entry.port = server_port;

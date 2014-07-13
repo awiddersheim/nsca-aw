@@ -1105,6 +1105,7 @@ static void wait_for_connections(void) {
 		IPv4_ADDRESS_SIZE
 	);
 	conn_entry.port = server_port;
+	conn_entry.addr = myname;
 
 	/* listen for connection requests */
 	if (mode == SINGLE_PROCESS_DAEMON)
@@ -1201,34 +1202,6 @@ static void accept_connection(struct conn_entry conn_entry, void *unused) {
 		do_exit(STATE_CRITICAL);
 	}
 
-#ifdef HAVE_LIBWRAP
-
-	/* check whether or not connections are allowed from this host */
-	request_init(&req, RQ_DAEMON, "nsca", RQ_FILE, new_sd, 0);
-	fromhost(&req);
-
-	if (!hosts_access(&req)) {
-		/* refuse the connection */
-		syslog(LOG_ERR, "Refused connection from %s", eval_client(&req));
-		close(new_sd);
-		return;
-	}
-#endif
-
-	/* fork() if necessary */
-	if (mode == MULTI_PROCESS_DAEMON) {
-		pid = fork();
-
-		if (pid) {
-			/* parent doesn't need the new connection */
-			close(new_sd);
-			return;
-		}
-		else
-			/* child does not need to listen for connections */
-			close(conn_entry.sock);
-	}
-
 	/* create conn_entry */
 	new_conn_entry.sock = new_sd;
 	strncpy(
@@ -1237,6 +1210,7 @@ static void accept_connection(struct conn_entry conn_entry, void *unused) {
 		IPv4_ADDRESS_SIZE
 	);
 	new_conn_entry.port = ntohs(addr.sin_port);
+	new_conn_entry.addr = addr;
 
 	/* ignore connections where the port and address are null
 	 * as this can cause the daemon to hang
@@ -1260,6 +1234,48 @@ static void accept_connection(struct conn_entry conn_entry, void *unused) {
 			new_conn_entry.ipaddr,
 			new_conn_entry.port
 		);
+
+
+#ifdef HAVE_LIBWRAP
+	/* create request struct */
+	request_init(
+		&req,
+		RQ_DAEMON, "nsca",
+		RQ_CLIENT_SIN, &new_conn_entry.addr,
+		RQ_SERVER_SIN, &conn_entry.addr,
+		0
+	);
+
+	/* initialize methods to get address information */
+	sock_methods(&req);
+
+	/* check if connection is allowed */
+	if (!hosts_access(&req)) {
+		/* refuse the connection */
+		syslog(
+			LOG_ERR,
+			"Refused connection from %s:%d",
+			new_conn_entry.ipaddr,
+			new_conn_entry.port
+		);
+		close(new_sd);
+		return;
+	}
+#endif
+
+	/* fork() if necessary */
+	if (mode == MULTI_PROCESS_DAEMON) {
+		pid = fork();
+
+		if (pid) {
+			/* parent doesn't need the new connection */
+			close(new_sd);
+			return;
+		}
+		else
+			/* child does not need to listen for connections */
+			close(conn_entry.sock);
+	}
 
 	/* socket should be non-blocking */
 	if ((flags = fcntl(new_conn_entry.sock, F_GETFL, 0)) < 0) {

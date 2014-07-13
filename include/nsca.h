@@ -25,6 +25,7 @@ struct conn_entry {
 	int sock;
 	char ipaddr[IPv4_ADDRESS_SIZE];
 	int port;
+	struct sockaddr_in addr;
 };
 
 struct handler_entry {

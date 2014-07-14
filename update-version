@@ -3,10 +3,10 @@
 SHORTDATE=`date "+%m-%d-%Y"`
 
 # current version number
-CURRENTVERSION=2.9.3
+CURRENTVERSION=2.9.4
 
 # last date
-LASTDATE=06-23-2014
+LASTDATE=07-14-2014
 
 if [ "x$1" = "x" ]
 then

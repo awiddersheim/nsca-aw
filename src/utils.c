@@ -124,7 +124,7 @@ int encrypt_init(char *password, int encryption_method, char *received_iv, struc
 	/* server generates IV used for encryption */
 	if (received_iv == NULL)
 		generate_transmitted_iv(CI->transmitted_iv);
-	/* client recieves IV from server */
+	/* client receives IV from server */
 	else
 		memcpy(CI->transmitted_iv, received_iv, TRANSMITTED_IV_SIZE);
 

@@ -118,7 +118,7 @@ NSCA Changelog
 
 1.2.0 - 02/12/2002
 ------------------
-- Compatability between older versions has been broken!
+- Compatibility between older versions has been broken!
 - Server now sends client IV and timestamp, fixing
   encryption problems and making it more resistent
   to "replay" attacks (Ralf Ertzinger)

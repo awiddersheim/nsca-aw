@@ -292,7 +292,7 @@ int main(int argc, char **argv) {
 	/* close the connection */
 	close(sd);
 
-	printf("%d data packet(s) sent to host successfuly.\n", total_packets);
+	printf("%d data packet(s) sent to host successfully.\n", total_packets);
 
 	/* exit cleanly */
 	do_exit(STATE_OK);

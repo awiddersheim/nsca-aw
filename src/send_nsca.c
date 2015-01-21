@@ -452,10 +452,10 @@ int process_arguments(int argc, char **argv) {
 }
 
 /* handle timeouts */
+const char * alarm_handler_message = "Error: Timeout\n";
 void alarm_handler(int sig) {
-	printf("Error: Timeout after %d seconds\n", socket_timeout);
-
-	do_exit(STATE_CRITICAL);
+	write(stderr, alarm_handler_message, sizeof(alarm_handler_message) - 1);
+	_exit(STATE_CRITICAL);
 }
 
 

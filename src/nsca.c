@@ -52,6 +52,8 @@ int show_version = FALSE;
 int sigrestart = FALSE;
 int sigshutdown = FALSE;
 
+int foreground = FALSE;
+
 int using_alternate_dump_file = FALSE;
 static FILE *command_file_fp = NULL;
 
@@ -104,14 +106,15 @@ int main(int argc, char **argv) {
 	}
 
 	if (result != OK || show_help == TRUE) {
-		printf("Usage: %s -c <config_file> [mode]\n", argv[0]);
+		printf("Usage: %s [-f] -c <config_file> [mode]\n", argv[0]);
 		printf("\n");
 		printf("Options:\n");
-		printf(" <config_file> = Name of config file to use\n");
-		printf(" [mode]        = Determines how NSCA should run. Valid modes:\n");
-		printf("   --inetd     = Run as a service under inetd or xinetd\n");
-		printf("   --daemon    = Run as a standalone multi-process daemon\n");
-		printf("   --single    = Run as a standalone single-process daemon (default)\n");
+		printf(" -f --foreground = Do not fork, run in foreground\n");
+		printf(" <config_file>   = Name of config file to use\n");
+		printf(" [mode]          = Determines how NSCA should run. Valid modes:\n");
+		printf("   --inetd       = Run as a service under inetd or xinetd\n");
+		printf("   --daemon      = Run as a standalone multi-process daemon\n");
+		printf("   --single      = Run as a standalone single-process daemon (default)\n");
 		printf("\n");
 		printf("Notes:\n");
 		printf("This program is designed to accept passive check results from\n");
@@ -202,13 +205,14 @@ int main(int argc, char **argv) {
 		       V     */
 
 		/* daemonize and start listening for requests... */
-		if (fork() == 0) {
+		if (foreground || fork() == 0) {
 			/* in daemon mode - set up a new process group */
 			setsid();
 
 			/* handle signals */
 			signal(SIGQUIT, sighandler);
 			signal(SIGTERM, sighandler);
+			signal(SIGINT, sighandler);
 			signal(SIGHUP, sighandler);
 
 			/* close standard file descriptors */
@@ -2001,6 +2005,10 @@ int process_arguments(int argc, char **argv) {
 		else if (!strcmp(argv[x-1], "-V") || !strcmp(argv[x-1], "--version"))
 			show_version = TRUE;
 
+		/* run in foreground */
+		else if (!strcmp(argv[x-1], "-f") || !strcmp(argv[x-1], "--foreground"))
+			foreground=TRUE;
+
 		else if (!strcmp(argv[x-1], "-d") || !strcmp(argv[x-1], "--daemon"))
 			mode = MULTI_PROCESS_DAEMON;
 
@@ -2304,7 +2312,7 @@ void sighandler(int sig) {
 	}
 
 	/* else begin shutting down... */
-	if (sig == SIGTERM) {
+	if (sig == SIGTERM || sig == SIGINT) {
 		/* if shutdown is already true, in a signal trap loop */
 		if (sigshutdown == TRUE)
 			exit(STATE_CRITICAL);

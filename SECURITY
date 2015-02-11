@@ -21,7 +21,7 @@ is bad for two reasons:
 
 2) Worse, since Nagios can be configured to run event handlers
    for hosts and services, a remote user could indirectly cause
-   Nagios to shut down or restart a service (or do something 
+   Nagios to shut down or restart a service (or do something
    more serious).
 
 Running the NSCA daemon under inetd and making use of TCP wrappers

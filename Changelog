@@ -2,6 +2,11 @@
 NSCA Changelog
 **************
 
+2.9.5 - ??/??/????
+------------------
+
+- Allow daemon to run in the foreground (Simon Vetter)
+
 2.9.4 - 07/14/2014
 ------------------
 - Fixed potential crash when using libwrap functionality

@@ -1,0 +1,5 @@
+build:
+  image: inetu-centos:el6
+  script:
+    - ./configure
+    - make

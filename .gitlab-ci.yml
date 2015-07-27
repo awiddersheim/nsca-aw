@@ -1,5 +1,6 @@
 build:
   image: inetu-centos:el6
   script:
+    - yum -y install gcc openssl-devel
     - ./configure
     - make

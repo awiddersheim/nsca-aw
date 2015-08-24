@@ -1,6 +1,6 @@
 build:
   image: registry.inetu.org/centos:6
-  type: build
+  stage: build
   script:
     - yum -y install gcc openssl-devel
     - ./configure
